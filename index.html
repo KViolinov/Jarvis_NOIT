@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Home Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body class="antialiased">
+
+    <div id="app" class="main-grid">
+        <aside class="flex flex-col space-y-6">
+            <div class="card p-6">
+                <div class="text-6xl font-bold" id="time">...</div>
+                <div class="text-slate-300" id="date">...</div>
+                <div class="text-slate-400 mt-2">Велико Търново</div>
+                <div class="mt-4" id="greeting">Добър вечер 🌙</div>
+                <div id="weather-box" class="flex items-center mt-4 text-slate-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+                        <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path>
+                    </svg>
+                    <span id="temp-text">Зареждане...</span>
+                    <span id="humidity" class="ml-auto"></span>
+                </div>
+            </div>
+
+            <!-- Таймер кутийка -->
+            <!-- <div class="card p-6 flex flex-col">
+                <div class="flex justify-between items-center">
+                    <div class="text-4xl font-semibold">54:26</div>
+                    <i data-feather="play-circle" class="w-8 h-8"></i>
+                </div>
+            </div>  -->
+
+            <div>
+                <h2 class="text-2xl font-bold mb-4">Таймери</h2>
+                <div id="timers-container" class="space-y-4">
+                    <div class="card p-6 flex flex-col">
+                        <div class="flex justify-between items-center">
+                            <div id="initial-timer-display" class="text-4xl font-semibold">00:00</div>
+                            <i id="initial-timer-toggle" data-feather="play-circle" class="w-8 h-8 cursor-pointer"></i>
+                        </div>
+                    </div>
+                </div>
+                <button id="add-timer-btn" class="mt-4 p-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold w-full flex items-center justify-center">
+                    <i data-feather="plus" class="w-5 h-5 mr-2"></i>
+                    Добави нов таймер
+                </button>
+            </div>
+
+            <div class="card p-6 flex flex-col">
+                <div class="flex-grow flex flex-col justify-between space-y-4">
+                    <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span>CPU</span>
+                        <span id="cpu-value">15%</span>
+                    </div>
+                    <div class="w-full bg-slate-700 rounded-full h-1.5">
+                        <div id="cpu-bar" class="bg-sky-400 h-1.5 rounded-full" style="width: 15%"></div>
+                    </div>
+                    </div>
+                    <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span>RAM</span>
+                        <span id="ram-value">22%</span>
+                    </div>
+                    <div class="w-full bg-slate-700 rounded-full h-1.5">
+                        <div id="ram-bar" class="bg-sky-400 h-1.5 rounded-full" style="width: 22%"></div>
+                    </div>
+                    </div>
+                    <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span>Memory</span>
+                        <span id="memory-value">58.9%</span>
+                    </div>
+                   <div class="w-full bg-slate-700 rounded-full h-1.5">
+                    <div id="memory-bar" class="bg-sky-400 h-1.5 rounded-full" style="width: 58.9%"></div>
+                    </div>
+
+                    <div class="h-16 mt-4">
+                    <svg id="wave-svg" class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 40">
+                        <path id="wave-path" d="M 0 30 C 10 15, 20 15, 30 25 S 50 40, 60 30 S 80 10, 90 20 L 100 25" fill="none" stroke="#38bdf8" stroke-width="2"/>
+                    </svg>
+                    </div>
+                </div>
+                </div>
+
+        </aside>
+
+        <main class="flex flex-col space-y-6">
+            <!--Офис устройства-->
+            <div>
+                <h2 class="text-2xl font-bold mb-4">Офис</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="control-card active" data-device="Datorlampa">
+                        <div class="icon-container">
+                           <i data-feather="sun"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold">Главна лампа</div>
+                            <div class="text-sm status">Включено</div>
+                        </div>
+                    </div>
+                    <div class="control-card" data-device="Belysning">
+                        <div class="icon-container">
+                           <i data-feather="sun"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold">Бар светлини</div>
+                            <div class="text-sm status">Изключено</div>
+                        </div>
+                    </div>
+                    <div class="control-card" data-device="Hörnlampa">
+                        <div class="icon-container">
+                            <i data-feather="sun"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold">Настолна лампа</div>
+                            <div class="text-sm status">Изключено</div>
+                        </div>
+                    </div>
+                    <div class="control-card" data-device="TV">
+                        <div class="icon-container">
+                           <i data-feather="tv"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold">Телевизор</div>
+                            <div class="text-sm status">Изключено</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--IR устройства-->
+            <div>
+                <h2 class="text-2xl font-bold mb-4">IR устройства</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="control-card" data-device="TV">
+                        <div class="icon-container">
+                           <i data-feather="monitor"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold">Телевизор</div>
+                            <div class="text-sm status">Изключено</div>
+                        </div>
+                    </div>
+                    <div class="control-card" data-device="Belysning">
+                        <div class="icon-container">
+                           <i data-feather="wind"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold">Климатик</div>
+                            <div class="text-sm status">Изключено</div>
+                        </div>
+                    </div>
+                    <div class="control-card" data-device="Hörnlampa">
+                        <div class="icon-container">
+                            <i data-feather="speaker"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold">Soundar</div>
+                            <div class="text-sm status">Изключено</div>
+                        </div>
+                    </div>
+                    <div class="control-card" data-device="TV">
+                        <div class="icon-container">
+                           <i data-feather="plus"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold">Добави устройство</div>
+                            <div class="text-sm status">Изключено</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold mb-4">Камери</h2>
+                <div class="card relative h-56 bg-cover bg-center" style="background-image: url('https://assets.simplisafe.com/products/wloc/feature_video_poster_mar_24.png');">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent rounded-xl"></div>
+                    <div class="absolute bottom-0 left-0 p-4">
+                        <div class="font-bold text-lg">Камера в градината</div>
+                    </div>
+                     <div class="absolute bottom-4 right-4 bg-white/20 hover:bg-white/30 p-2 rounded-full cursor-pointer">
+                        <i data-feather="chevron-right" class="w-6 h-6"></i>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+        
+        <aside class="flex flex-col space-y-6">
+            <div>
+                <h2 class="text-2xl font-bold mb-4">Списък със задачи</h2>
+                <div class="card">
+                    <div class="flex mb-4">
+                        <input type="text" id="todo-input" class="w-full bg-white/10 border border-white/20 rounded-lg py-2 px-4 text-white placeholder-slate-400 mr-2" placeholder="Добави нова задача...">
+                        <button id="add-todo-btn" class="p-3 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-semibold flex items-center justify-center">
+                            <i data-feather="plus" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <ul id="todo-list" class="space-y-3">
+                        </ul>
+                </div>
+            </div>
+            
+            <div>
+                <h2 class="text-2xl font-bold mb-4">Jarvis</h2>
+                <div class="card">
+                    <div class="text-center p-4">
+                        <p id="jarvis-status" class="text-slate-300 text-lg">Инициализация...</p>
+                    </div>
+                    <canvas id="jarvis-canvas" style="width: 100%; height: 300px; background-color: black;"></canvas>
+                </div>
+            </div>
+            
+        </aside>
+
+    </div>
+    <script type="module" src="renderer.js"></script>
+</body>
+</html>
+
+
+
+
+
+// TODO - 
+// - да оправя ТODO листа да е с локален txt файл. - мисля че работи 
+// - Да оправя таймера да работи евентуално.
+// - Да взима прогнозата за времето от някой сайт. - работи
+// - Евентуално да направя така че наистина да работят слайдерите за процесора,рамта и т.н. - май рабти
+// - Да оправя Джарвис да изглежда по-добре и най-важното, да работи както трябва! - мисля че работи, но трябва да го тествам!
