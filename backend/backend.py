@@ -111,8 +111,8 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
 # --- API Keys and Configuration ---
-ELEVENLABS_API_KEY = "sk_0dfe95fad3b8b17af02ce8d21ecf0fb1c5c63e97b2688707"
-GEMINI_API_KEY = "AIzaSyBzMQutGJnduWwKcTrmvAvP_QiTj8zaJ3I"
+ELEVENLABS_API_KEY = "***"
+GEMINI_API_KEY = "***"
 
 # Създаване на ElevenLabs клиент с API ключа
 client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
