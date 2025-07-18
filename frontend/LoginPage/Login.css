@@ -1,0 +1,140 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: url('../images/background.jpg') no-repeat center center fixed;
+    background-size: cover;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #e0e0e0;
+}
+
+.container {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+}
+
+.login-form {
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(200, 160, 255, 0.4);
+    border-radius: 15px;
+    padding: 40px 30px;
+    text-align: center;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+.profile-image {
+    margin-bottom: 30px;
+}
+
+.profile-image img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid #b19cd9;
+    object-fit: cover;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #e0e0e0;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.form-group input:focus {
+    background: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 0 2px #b19cd9;
+}
+
+.form-group input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.login-btn {
+    width: 100%;
+    padding: 15px;
+    background: #b19cd9;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+.login-btn:hover {
+    background: #9a7bc0;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(177, 156, 217, 0.4);
+}
+
+.signup-link {
+    margin-top: 20px;
+    color: #d0d0d0;
+    font-size: 14px;
+}
+
+.signup-link a {
+    color: #ffb6c1;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.signup-link a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+    .container {
+        max-width: 350px;
+        padding: 15px;
+    }
+
+    .login-form {
+        padding: 30px 20px;
+    }
+
+    .profile-image img {
+        width: 60px;
+        height: 60px;
+    }
+
+    .form-group input {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    .login-btn {
+        padding: 12px;
+        font-size: 14px;
+    }
+}
