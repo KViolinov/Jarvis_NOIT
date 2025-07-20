@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Home Dashboard</title>
+
+    <link rel="stylesheet" href="HomePage.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <div class="home-title">Home</div>
+            <div class="user-profile">
+                <img src="https://via.placeholder.com/40/a7b0f2/ffffff?text=K" alt="User Avatar"> <span>Hello,
+                    Konstantin</span>
+            </div>
+        </div>
+
+        <div class="dashboard-item time-weather">
+            <div class="current-time">15:51</div>
+            <div class="weather-info">
+                <i class="fas fa-sun"></i>
+                <div>
+                    34.5°C<br>
+                    Veliko Tarnovo - Sunny
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-item lights-control">
+            <h3>&bull; Lights</h3>
+            <div class="light-item">
+                <span>Bar Lights</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="light-item">
+                <span>Main Lamp</span>
+                <label class="toggle-switch">
+                    <input type="checkbox">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="light-item">
+                <span>Piano Lights</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="light-item">
+                <span>Desk Lamp</span>
+                <label class="toggle-switch">
+                    <input type="checkbox">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="dashboard-item home-temp">
+            <h3>Home Temperature</h3>
+            <div class="value">26.38 °C</div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" style="width: 70%;"></div>
+            </div>
+        </div>
+
+        <div class="dashboard-item home-humidity">
+            <h3>Home Humidity</h3>
+            <div class="value">47.36 %</div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" style="width: 47%;"></div>
+            </div>
+        </div>
+
+        <div class="dashboard-item jarvis-section">
+            <h3>Jarvis</h3>
+            <div class="jarvis-dots" id="jarvisDots"></div>
+        </div>
+
+        <div class="nav-icons">
+            <div class="icon-btn active"><i class="fas fa-home"></i></div>
+            <div class="icon-btn"><i class="fas fa-chart-line"></i></div>
+            <div class="icon-btn"><i class="fas fa-bell"></i></div>
+            <div class="icon-btn"><i class="fas fa-cog"></i></div>
+            <div class="icon-btn"><i class="fas fa-user"></i></div>
+        </div>
+    </div>
+    <script src="HomePage.js"></script>
+</body>
+
+</html>
