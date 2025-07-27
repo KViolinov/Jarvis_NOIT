@@ -5,11 +5,17 @@
 
 // Функция за конвертиране на MAC адрес низ към масив от uint8_t
 bool parseMacAddress(const String &macStr, uint8_t *mac) {
-  if (macStr.length() != MAC_STR_LEN) return false;
+  if (macStr.length() != 17) return false;
+
+  int values[6];
+  if (sscanf(macStr.c_str(), "%x:%x:%x:%x:%x:%x",
+             &values[0], &values[1], &values[2],
+             &values[3], &values[4], &values[5]) != 6) {
+    return false;
+  }
 
   for (int i = 0; i < 6; i++) {
-    String byteStr = macStr.substring(i * 3, i * 3 + 2);
-    mac[i] = (uint8_t) strtoul(byteStr.c_str(), NULL, 16);
+    mac[i] = (uint8_t)values[i];
   }
   return true;
 }
@@ -68,7 +74,7 @@ void loop() {
         }
       }
 
-      const char *msg = "GET_DHT";
+      const char *msg = "GET";
       esp_err_t result = esp_now_send(peerMac, (uint8_t *)msg, strlen(msg));
       if (result == ESP_OK) {
         Serial.print("Request sent to ");
@@ -77,8 +83,41 @@ void loop() {
         Serial.print("Send error: ");
         Serial.println(result);
       }
+    } 
 
-    } else {
+    else if(input.startsWith("init ")){
+      String macStr = input.substring(5);
+
+      uint8_t peerMac[6];
+      if (!parseMacAddress(macStr, peerMac)) {
+        Serial.println("Invalid MAC format! Use xx:xx:xx:xx:xx:xx");
+        return;
+      }
+
+      esp_now_peer_info_t peerInfo = {};
+      memcpy(peerInfo.peer_addr, peerMac, 6);
+      peerInfo.channel = 0; // канал 0 за текущия WiFi канал
+      peerInfo.encrypt = false;
+
+      if (!esp_now_is_peer_exist(peerMac)) {
+        if (esp_now_add_peer(&peerInfo) != ESP_OK) {
+          Serial.println("Failed to add peer");
+          return;
+        }
+      }
+
+      const char *msg = "INIT";
+      esp_err_t result = esp_now_send(peerMac, (uint8_t *)msg, strlen(msg));
+      if (result == ESP_OK) {
+        Serial.print("Request sent to ");
+        Serial.println(macStr);
+      } else {
+        Serial.print("Send error: ");
+        Serial.println(result);
+      }
+    }
+
+    else {
       Serial.println("Unknown command. Use: get xx:xx:xx:xx:xx:xx");
     }
   }

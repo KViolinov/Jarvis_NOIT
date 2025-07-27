@@ -14,7 +14,7 @@ void onDataRecv(const esp_now_recv_info_t *info, const uint8_t *data, int len) {
     msg += (char)data[i];
   }
 
-  if (msg == "GET_DHT") {
+  if (msg == "GET") {
     float temperature = dht.readTemperature();
     float humidity = dht.readHumidity();
 
@@ -28,6 +28,11 @@ void onDataRecv(const esp_now_recv_info_t *info, const uint8_t *data, int len) {
 
     esp_now_send(gatewayMac, (uint8_t *)msgToSend, strlen(msgToSend));
     Serial.println("Sent info about DHT11 sensor");
+  }
+  else if (msg == "INIT") {
+    const char* msgToSend = "Connection Successful";
+    esp_now_send(gatewayMac, (uint8_t *)msgToSend, strlen(msgToSend));
+    Serial.println("Sent confirmation message to gateway");
   }
 }
 
