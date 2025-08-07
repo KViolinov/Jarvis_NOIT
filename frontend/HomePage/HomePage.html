@@ -1,24 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Home Dashboard</title>
-
     <link rel="stylesheet" href="HomePage.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
-
 <body>
     <div class="dashboard-container">
         <div class="header">
             <div class="home-title">Home</div>
             <div class="user-profile">
-                <img src="https://via.placeholder.com/40/a7b0f2/ffffff?text=K" alt="User Avatar"> <span>Hello,
-                    Konstantin</span>
+                <img src="https://via.placeholder.com/40/a7b0f2/ffffff?text=K" alt="User Avatar"> <span>Hello, Konstantin</span>
             </div>
         </div>
 
@@ -82,8 +77,7 @@
         </div>
 
         <div class="dashboard-item jarvis-section">
-            <h3>Jarvis</h3>
-            <div class="jarvis-dots" id="jarvisDots"></div>
+            <canvas id="canvas"></canvas>
         </div>
 
         <div class="nav-icons">
@@ -96,5 +90,4 @@
     </div>
     <script src="HomePage.js"></script>
 </body>
-
 </html>

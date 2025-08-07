@@ -55,6 +55,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
+    box-sizing: border-box;
 }
 
 .header {
@@ -225,58 +226,24 @@ input:checked+.slider:before {
     color: var(--text-light);
     text-align: center;
     position: relative;
+    box-sizing: border-box;
 }
 
-.jarvis-dots {
+.jarvis-section canvas {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none;
-    overflow: hidden;
     z-index: 0;
+    display: block;
+    overflow: hidden;
 }
 
 .jarvis-section h3 {
     z-index: 1;
     position: relative;
     margin-bottom: 0;
-}
-
-.dot {
-    position: absolute;
-    background-color: aqua;
-    border-radius: 50%;
-    opacity: 0.7;
-    animation: moveDot linear infinite;
-}
-
-@keyframes moveDot {
-    0% {
-        transform: translate(var(--x-start), var(--y-start)) scale(0);
-        opacity: 0;
-    }
-
-    25% {
-        transform: translate(var(--x-mid1), var(--y-mid1)) scale(1);
-        opacity: 1;
-    }
-
-    50% {
-        transform: translate(var(--x-mid2), var(--y-mid2)) scale(1);
-        opacity: 1;
-    }
-
-    75% {
-        transform: translate(var(--x-mid3), var(--y-mid3)) scale(1);
-        opacity: 1;
-    }
-
-    100% {
-        transform: translate(var(--x-end), var(--y-end)) scale(0);
-        opacity: 0;
-    }
 }
 
 .nav-icons {
