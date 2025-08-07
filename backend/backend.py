@@ -91,8 +91,6 @@
 #         print("\nСървърът е спрян.")
 
 
-
-
 # import asyncio
 # import websockets
 # import json
@@ -232,6 +230,36 @@
 
 
 
+# import sqlite3
+
+# conn = sqlite3.connect("iot_system.db")
+# cursor = conn.cursor()
+
+# # Добавяне в Devices (без DeviceID)
+# cursor.execute("""
+# INSERT INTO Devices (DeviceName, DeviceMAC, DeviceType)
+# VALUES (?, ?, ?)
+# """, ("Main Lamp", "DA-8E-CF-EF-DA-58", "Relay"))
+
+# # Вземаме автоматично създадения DeviceID
+# device_id = cursor.lastrowid
+
+# # Добавяне в RGB подтаблицата
+# cursor.execute("""
+# INSERT INTO Relay (DeviceID, LastState, TimeOfRecord)
+# VALUES (?, ?, ?)
+# """, (device_id, "True", "07-08-2025 15:12:00"))
+
+# conn.commit()
+# conn.close()
+
+# print("Dobaveno ustroisto v RGB s ID:", device_id)
+
+
+
+
+
+
 import sqlite3
 
 # Свързване към базата
@@ -245,7 +273,7 @@ tables = cursor.fetchall()
 # Преминаване през всяка таблица и извеждане на съдържанието ѝ
 for table in tables:
     table_name = table[0]
-    print(f"\nTable: {table_name}")
+    print(f"\ntable: {table_name}")
     print("-" * (10 + len(table_name)))
 
     try:
@@ -258,16 +286,13 @@ for table in tables:
         print("-" * 50)
 
         if not rows:
-            print("[no records]")
+            print("[nqma zapisi]")
         else:
             for row in rows:
                 print(" | ".join(str(x) for x in row))
 
     except Exception as e:
-        print("⚠️ Error in reading the tables:", e)
+        print("⚠️ Error in reading the DB:", e)
 
 # Затваряне
 conn.close()
-
-
-
