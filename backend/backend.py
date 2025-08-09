@@ -237,24 +237,13 @@
 
 # # Добавяне в Devices (без DeviceID)
 # cursor.execute("""
-# INSERT INTO Devices (DeviceName, DeviceMAC, DeviceType)
-# VALUES (?, ?, ?)
-# """, ("Main Lamp", "DA-8E-CF-EF-DA-58", "Relay"))
-
-# # Вземаме автоматично създадения DeviceID
-# device_id = cursor.lastrowid
-
-# # Добавяне в RGB подтаблицата
-# cursor.execute("""
-# INSERT INTO Relay (DeviceID, LastState, TimeOfRecord)
-# VALUES (?, ?, ?)
-# """, (device_id, "True", "07-08-2025 15:12:00"))
+# DELETE FROM RGB WHERE LastColour = ? """, ("[128, 255, 64]",))
 
 # conn.commit()
 # conn.close()
 
-# print("Dobaveno ustroisto v RGB s ID:", device_id)
-
+# #print("Dobaveno ustroisto v RGB s ID:", device_id)
+# print("ok")
 
 
 
@@ -263,7 +252,7 @@
 import sqlite3
 
 # Свързване към базата
-conn = sqlite3.connect("iot_system.db")
+conn = sqlite3.connect("jarvis_db.db")
 cursor = conn.cursor()
 
 # Извличане на списъка с таблици
@@ -296,3 +285,5 @@ for table in tables:
 
 # Затваряне
 conn.close()
+
+
