@@ -411,9 +411,12 @@ import io
 import threading
 import os
 import sqlite3
+import urllib
 from dotenv import load_dotenv
 
 import google.generativeai as genai
+from ollama import chat
+from ollama import ChatResponse
 
 from elevenlabs.client import ElevenLabs
 from elevenlabs import play
@@ -429,7 +432,6 @@ BAUD_RATE = 115200
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
-# Зареждане на .env
 load_dotenv()
 
 ELEVENLABS_API_KEY = os.getenv("ELEVEN_LABS_API")
@@ -498,6 +500,20 @@ async def get_gemini_response(prompt: str) -> str:
         print(f"[{current_state}] Грешка при Gemini API: {e}")
         return "Грешка при свързване с Gemini."
 
+async def get_tiny_llama_response(prompt:str ) -> str:
+    print(f"[{current_state}] Изпращам промпт към Локалния модел (tiny llama): '{prompt}'...")
+    
+    response: ChatResponse = chat(model='gemma3', messages=[
+    {
+        'role': 'user',
+        'content': {prompt},
+    },
+    ])
+
+    print(response['message']['content'])
+    print(response.message.content)
+    return response.message.content
+
 async def send_to_all(message):
     if clients:
         await asyncio.gather(*[client.send(message) for client in clients])
@@ -508,17 +524,23 @@ async def recognize_loop():
         await set_state("idle")
         print("Слушам за 'Джарвис'...")
         text = await loop.run_in_executor(None, record_text_blocking)
+        
         if text and ("джарвис" in text or "джарви" in text):
             print("🟢 'Джарвис' е разпознат!")
             await set_state("listening")
             await synthesize_speech("Слушам")
             user_command = await loop.run_in_executor(None, record_text_blocking)
+            
             if user_command:
                 print(f"❓ Потребителят каза: {user_command}")
                 await set_state("answering")
-                gemini_answer = await get_gemini_response(user_command)
-                if gemini_answer:
-                    await synthesize_speech(gemini_answer)
+                if(checkWifi() == "Connected"):
+                    model_answer = await get_gemini_response(user_command)
+                else:
+                    model_answer = await get_tiny_llama_response(user_command)
+
+                if model_answer:
+                    await synthesize_speech(model_answer)
             else:
                 print("⚠️ Не разбрах командата след 'Джарвис'.")
         else:
@@ -534,7 +556,7 @@ async def handler(websocket):
         print(f"❌ Клиент се разкачи: {websocket.remote_address}")
         clients.remove(websocket)
 
-async def sendToDevice(message:str, macAddress:str):
+async def sendGetToDevice(macAddress:str):
     try:
         ser = serial.Serial(PORT, BAUD_RATE, timeout=5)
         time.sleep(2)  # Изчаква ESP-то да стартира
@@ -543,43 +565,58 @@ async def sendToDevice(message:str, macAddress:str):
         print("Error in opening the serial port:", e)
         exit(1)
 
-    if message == "get":
         # Изпращаме командата "get"
-        ser.write(f'get {macAddress}\n'.encode())
-        print("🔁 Sent: get")
+    ser.write(f'get {macAddress}\n'.encode())
+    print("🔁 Sent: get")
 
-        # Четем отговора на ESP-то
-        while True:
-            if ser.in_waiting > 0:
-                line = ser.readline().decode('utf-8', errors='ignore').strip()
-                if line:
-                    print("📥 Received:", line)
-                    # Спиране, ако сме получили очаквания отговор
-                    if "Temperature:" in line or "Humidity:" in line:
-                        break
-
-
-    elif message == "get2":
-        # Изпращаме командата "get"
-        ser.write(f'get2 {macAddress}\n'.encode())
-        print("🔁 Sent: get2")
-
-        # Четем отговора на ESP-то
-        while True:
-            if ser.in_waiting > 0:
-                line = ser.readline().decode('utf-8', errors='ignore').strip()
-                if line:
-                    print("📥 Received:", line)
-                    # Спиране, ако сме получили очаквания отговор
-                    if "Temperature:" in line or "Humidity:" in line:
-                        break
+    # Четем отговора на ESP-то
+    while True:
+        if ser.in_waiting > 0:
+            line = ser.readline().decode('utf-8', errors='ignore').strip()
+            if line:
+                print("📥 Received:", line)
+                # Спиране, ако сме получили очаквания отговор
+                if "Temperature:" in line or "Humidity:" in line:
+                    break
 
     ser.close()
     print("Connection is ended.")
-    
+
+async def sendGetToDevice(macAddress:str, message:str):
+    try:
+        ser = serial.Serial(PORT, BAUD_RATE, timeout=5)
+        time.sleep(2)  # Изчаква ESP-то да стартира
+        print(f"Connected to the {PORT}")
+    except serial.SerialException as e:
+        print("Error in opening the serial port:", e)
+        exit(1)
+
+    # Изпращаме командата "get"
+    ser.write(f'get2 {macAddress} {message}\n'.encode())
+    print("🔁 Sent: get2")
+
+    # Четем отговора на ESP-то
+    while True:
+        if ser.in_waiting > 0:
+            line = ser.readline().decode('utf-8', errors='ignore').strip()
+            if line:
+                print("📥 Received:", line)
+                # Спиране, ако сме получили очаквания отговор
+                if "Temperature:" in line or "Humidity:" in line:
+                    break
+
+    ser.close()
+    print("Connection is ended.")
+
+async def checkDHTSensor():
+    macAddress = searchMacAddressInDB("DHT")
+    sendGetToDevice(macAddress)
+    # todo - to upload this value to the database in table DHT
+
 async def checkDBforActivity():
     """Проверява базата без да блокира event loop."""
     def query_db():
+        # Searching for activity in table Relay
         conn = sqlite3.connect("jarvis_db.db")
         cursor = conn.cursor()
         print("table: Relay")
@@ -604,6 +641,56 @@ async def checkDBforActivity():
         finally:
             conn.close()
 
+        # Searching for activity in table RGB
+        conn = sqlite3.connect("jarvis_db.db")
+        cursor = conn.cursor()
+        print("table: Relay")
+        print("-" * 20)
+        try:
+            cursor.execute("""
+                SELECT * FROM RGB
+                WHERE Checked = 0
+                ORDER BY TimeOfRecord ASC
+            """)
+            rows = cursor.fetchall()
+            col_names = [description[0] for description in cursor.description]
+            print(" | ".join(col_names))
+            print("-" * 50)
+            if not rows:
+                print("[nqma zapisi]")
+            else:
+                for row in rows:
+                    print(" | ".join(str(x) for x in row))
+        except Exception as e:
+            print("⚠️ Error in reading Relay:", e)
+        finally:
+            conn.close()
+
+        # Searching for activity in table IR
+        conn = sqlite3.connect("jarvis_db.db")
+        cursor = conn.cursor()
+        print("table: Relay")
+        print("-" * 20)
+        try:
+            cursor.execute("""
+                SELECT * FROM IR
+                WHERE Checked = 0
+                ORDER BY TimeOfRecord ASC
+            """)
+            rows = cursor.fetchall()
+            col_names = [description[0] for description in cursor.description]
+            print(" | ".join(col_names))
+            print("-" * 50)
+            if not rows:
+                print("[nqma zapisi]")
+            else:
+                for row in rows:
+                    print(" | ".join(str(x) for x in row))
+        except Exception as e:
+            print("⚠️ Error in reading Relay:", e)
+        finally:
+            conn.close()
+
     await asyncio.to_thread(query_db)
 
 async def db_loop():
@@ -611,6 +698,44 @@ async def db_loop():
     while True:
         await checkDBforActivity()
         await asyncio.sleep(5)
+
+async def dht_loop():
+    """Изпълнява checkDHTSensor() на всеки 15 минути."""
+    while True:
+        await checkDHTSensor()
+        await asyncio.sleep(900)
+
+async def searchMacAddressInDB(deviceType:str) -> str:
+    # Searching for activity in table Devices - not working
+        conn = sqlite3.connect("jarvis_db.db")
+        cursor = conn.cursor()
+        print("table: Devices")
+        print("-" * 20)
+        try:
+            cursor.execute("""
+                SELECT * FROM Devices
+            """)
+            rows = cursor.fetchall()
+            col_names = [description[0] for description in cursor.description]
+            print(" | ".join(col_names))
+            print("-" * 50)
+            if not rows:
+                print("[nqma zapisi]")
+            else:
+                for row in rows:
+                    print(" | ".join(str(x) for x in row))
+        except Exception as e:
+            print("⚠️ Error in reading Relay:", e)
+        finally:
+            conn.close()
+
+async def checkWifi() -> str:
+    try:
+        url = "https://www.google.com"
+        urllib.request.urlopen(url, timeout=5)
+        return "Connected"
+    except:
+        return "Not connected"
 
 async def main():
     # Стартираме voice loop в отделен thread
