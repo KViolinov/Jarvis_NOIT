@@ -365,43 +365,6 @@
 
 
 
-# # Свързване към базата
-# conn = sqlite3.connect("jarvis_db.db")
-# cursor = conn.cursor()
-
-# print("table: Relay")
-# print("-" * 20)
-
-# try:
-#     # Заявка само за Relay: Checked == 0 и FIFO по TimeOfRecord
-#     cursor.execute("""
-#         SELECT * FROM Relay
-#         WHERE Checked = 0
-#         ORDER BY TimeOfRecord ASC
-#     """)
-
-#     rows = cursor.fetchall()
-
-#     # Имена на колоните
-#     col_names = [description[0] for description in cursor.description]
-#     print(" | ".join(col_names))
-#     print("-" * 50)
-
-#     if not rows:
-#         print("[nqma zapisi]")
-#     else:
-#         for row in rows:
-#             print(" | ".join(str(x) for x in row))
-
-# except Exception as e:
-#     print("⚠️ Error in reading Relay:", e)
-
-# # Затваряне
-# conn.close()
-
-
-
-
 import asyncio
 import websockets
 import json
@@ -424,6 +387,7 @@ from elevenlabs import voices
 
 import serial
 import time
+from datetime import datetime
 
 PORT = 'COM4'
 BAUD_RATE = 115200
@@ -534,7 +498,7 @@ async def recognize_loop():
             if user_command:
                 print(f"❓ Потребителят каза: {user_command}")
                 await set_state("answering")
-                if(checkWifi() == "Connected"):
+                if(checkWifi()):
                     model_answer = await get_gemini_response(user_command)
                 else:
                     model_answer = await get_tiny_llama_response(user_command)
@@ -556,33 +520,65 @@ async def handler(websocket):
         print(f"❌ Клиент се разкачи: {websocket.remote_address}")
         clients.remove(websocket)
 
-async def sendGetToDevice(macAddress:str):
+def sendInitToDevice(macAddress: str) -> bool:
     try:
         ser = serial.Serial(PORT, BAUD_RATE, timeout=5)
         time.sleep(2)  # Изчаква ESP-то да стартира
         print(f"Connected to the {PORT}")
     except serial.SerialException as e:
         print("Error in opening the serial port:", e)
-        exit(1)
+        return ""  # Return empty string on error
 
-        # Изпращаме командата "get"
+    ser.write(f'init {macAddress}\n'.encode())
+    print(f"🔁 Sent: init to {macAddress}")
+
+    line = ""
+    start_time = time.time()
+    while True:
+        if ser.in_waiting > 0:
+            line = ser.readline().decode('utf-8', errors='ignore').strip()
+            if line == "Connection Successful":
+                print("📥 Received:", line)
+                break
+        # Optional: timeout after 5 seconds
+        if time.time() - start_time > 5:
+            print("⚠️ Timeout waiting for response.")
+            break
+
+    ser.close()
+    print("Connection is ended.")
+    return True
+
+def sendGetToDevice(macAddress: str) -> str:
+    try:
+        ser = serial.Serial(PORT, BAUD_RATE, timeout=5)
+        time.sleep(2)  # Изчаква ESP-то да стартира
+        print(f"Connected to the {PORT}")
+    except serial.SerialException as e:
+        print("Error in opening the serial port:", e)
+        return ""  # Return empty string on error
+
     ser.write(f'get {macAddress}\n'.encode())
     print("🔁 Sent: get")
 
-    # Четем отговора на ESP-то
+    line = ""
+    start_time = time.time()
     while True:
         if ser.in_waiting > 0:
             line = ser.readline().decode('utf-8', errors='ignore').strip()
             if line:
                 print("📥 Received:", line)
-                # Спиране, ако сме получили очаквания отговор
-                if "Temperature:" in line or "Humidity:" in line:
-                    break
+                break
+        # Optional: timeout after 5 seconds
+        if time.time() - start_time > 5:
+            print("⚠️ Timeout waiting for response.")
+            break
 
     ser.close()
     print("Connection is ended.")
+    return line
 
-async def sendGetToDevice(macAddress:str, message:str):
+def sendGetToDevice(macAddress:str, message:str) -> str:
     try:
         ser = serial.Serial(PORT, BAUD_RATE, timeout=5)
         time.sleep(2)  # Изчаква ESP-то да стартира
@@ -601,95 +597,145 @@ async def sendGetToDevice(macAddress:str, message:str):
             line = ser.readline().decode('utf-8', errors='ignore').strip()
             if line:
                 print("📥 Received:", line)
-                # Спиране, ако сме получили очаквания отговор
-                if "Temperature:" in line or "Humidity:" in line:
-                    break
+                break
 
     ser.close()
     print("Connection is ended.")
+    return line
 
 async def checkDHTSensor():
     macAddress = searchMacAddressInDB("DHT")
-    sendGetToDevice(macAddress)
-    # todo - to upload this value to the database in table DHT
+    data = sendGetToDevice(macAddress)
+
+    temperature = None
+    humidity = None
+
+    # Parse the received data
+    for line in data.splitlines(): # not sure about this
+        if "Temperature:" in line:
+            temperature = line.split(":")[1].strip()
+        elif "Humidity:" in line:
+            humidity = line.split(":")[1].strip()
+
+    # Insert into DHT table
+    conn = sqlite3.connect("jarvis_db.db")
+    cursor = conn.cursor()
+
+    time_of_record = getTime()
+    
+    cursor.execute("""
+        INSERT INTO DHT (DeviceMACID, LastTemperature, LastHumidity, TimeOfRecord)
+        VALUES (?, ?, ?, ?)
+    """, (macAddress, temperature, humidity, time_of_record))
+
+    conn.commit()
+    conn.close()
 
 async def checkDBforActivity():
     """Проверява базата без да блокира event loop."""
     def query_db():
         # Searching for activity in table Relay
         conn = sqlite3.connect("jarvis_db.db")
+        conn.row_factory = sqlite3.Row  # This allows access by column name
         cursor = conn.cursor()
-        print("table: Relay")
-        print("-" * 20)
-        try:
-            cursor.execute("""
-                SELECT * FROM Relay
-                WHERE Checked = 0
-                ORDER BY TimeOfRecord ASC
-            """)
-            rows = cursor.fetchall()
-            col_names = [description[0] for description in cursor.description]
-            print(" | ".join(col_names))
-            print("-" * 50)
-            if not rows:
-                print("[nqma zapisi]")
-            else:
-                for row in rows:
-                    print(" | ".join(str(x) for x in row))
-        except Exception as e:
-            print("⚠️ Error in reading Relay:", e)
-        finally:
-            conn.close()
+        cursor.execute("""
+            SELECT * FROM Relay
+            WHERE Checked = 0
+            ORDER BY TimeOfRecord ASC
+        """)
+        rows = cursor.fetchall()
+
+        if not rows:
+            print("[nqma zapisi]")  # No records found
+        else:
+            for row in rows:
+                device_mac = row["DeviceMACID"]
+                last_state = row["LastState"]
+                time_of_record = row["TimeOfRecord"]
+                checked = row["Checked"]
+                print(f"MAC: {device_mac}, State: {last_state}, Time: {time_of_record}, Checked: {checked}")
+
+                sendGetToDevice(macAddress=device_mac)
+
+                # Delete the current row
+                cursor.execute("""
+                    DELETE FROM Relay
+                    WHERE DeviceMACID = ? AND TimeOfRecord = ?
+                """, (device_mac, time_of_record))
+
+                print(f"Deleted row with MAC: {device_mac} and Time: {time_of_record}")
+
+        conn.commit()
 
         # Searching for activity in table RGB
         conn = sqlite3.connect("jarvis_db.db")
+        conn.row_factory = sqlite3.Row  # This allows access by column name
         cursor = conn.cursor()
-        print("table: Relay")
-        print("-" * 20)
-        try:
-            cursor.execute("""
-                SELECT * FROM RGB
-                WHERE Checked = 0
-                ORDER BY TimeOfRecord ASC
-            """)
-            rows = cursor.fetchall()
-            col_names = [description[0] for description in cursor.description]
-            print(" | ".join(col_names))
-            print("-" * 50)
-            if not rows:
-                print("[nqma zapisi]")
-            else:
-                for row in rows:
-                    print(" | ".join(str(x) for x in row))
-        except Exception as e:
-            print("⚠️ Error in reading Relay:", e)
-        finally:
-            conn.close()
+        cursor.execute("""
+            SELECT * FROM RGB
+            WHERE Checked = 0
+            ORDER BY TimeOfRecord ASC
+        """)
+        rows = cursor.fetchall()
+
+        if not rows:
+            print("[nqma zapisi]")  # No records found
+        else:
+            for row in rows:
+                device_mac = row["DeviceMACID"]
+                last_colour = row["LastColour"]
+                last_intensity = row["LastIntensity"]
+                time_of_record = row["TimeOfRecord"]
+                checked = row["Checked"]
+                print(f"MAC: {device_mac}, State: {last_colour}, Type: {last_intensity}, Time: {time_of_record}, Checked: {checked}")
+
+                messageToSend = last_colour + " " + last_intensity
+                sendGetToDevice(macAddress=device_mac, message=messageToSend)
+
+                # Delete the current row
+                cursor.execute("""
+                    DELETE FROM RGB
+                    WHERE DeviceMACID = ? AND TimeOfRecord = ?
+                """, (device_mac, time_of_record))
+
+                print(f"Deleted row with MAC: {device_mac} and Time: {time_of_record}")
+
+        conn.commit()
+
 
         # Searching for activity in table IR
         conn = sqlite3.connect("jarvis_db.db")
+        conn.row_factory = sqlite3.Row  # This allows access by column name
         cursor = conn.cursor()
-        print("table: Relay")
-        print("-" * 20)
-        try:
-            cursor.execute("""
-                SELECT * FROM IR
-                WHERE Checked = 0
-                ORDER BY TimeOfRecord ASC
-            """)
-            rows = cursor.fetchall()
-            col_names = [description[0] for description in cursor.description]
-            print(" | ".join(col_names))
-            print("-" * 50)
-            if not rows:
-                print("[nqma zapisi]")
-            else:
-                for row in rows:
-                    print(" | ".join(str(x) for x in row))
-        except Exception as e:
-            print("⚠️ Error in reading Relay:", e)
-        finally:
-            conn.close()
+        cursor.execute("""
+            SELECT * FROM IR
+            WHERE Checked = 0
+            ORDER BY TimeOfRecord ASC
+        """)
+        rows = cursor.fetchall()
+
+        if not rows:
+            print("[nqma zapisi]")  # No records found
+        else:
+            for row in rows:
+                device_mac = row["DeviceMACID"]
+                last_code_sent = row["LastCodeSent"]
+                time_of_record = row["TimeOfRecord"]
+                checked = row["Checked"]
+                print(f"MAC: {device_mac}, State: {last_state}, Code: {last_code_sent}, Time: {time_of_record}, Checked: {checked}")
+
+                sendGetToDevice(macAddress=device_mac, message=last_code_sent)
+
+                # Delete the current row
+                cursor.execute("""
+                    DELETE FROM IR
+                    WHERE DeviceMACID = ? AND TimeOfRecord = ?
+                """, (device_mac, time_of_record))
+
+                print(f"Deleted row with MAC: {device_mac} and Time: {time_of_record}")
+
+        conn.commit()
+
 
     await asyncio.to_thread(query_db)
 
@@ -705,43 +751,35 @@ async def dht_loop():
         await checkDHTSensor()
         await asyncio.sleep(900)
 
-async def searchMacAddressInDB(deviceType:str) -> str:
-    # Searching for activity in table Devices - not working
-        conn = sqlite3.connect("jarvis_db.db")
-        cursor = conn.cursor()
-        print("table: Devices")
-        print("-" * 20)
-        try:
-            cursor.execute("""
-                SELECT * FROM Devices
-            """)
-            rows = cursor.fetchall()
-            col_names = [description[0] for description in cursor.description]
-            print(" | ".join(col_names))
-            print("-" * 50)
-            if not rows:
-                print("[nqma zapisi]")
-            else:
-                for row in rows:
-                    print(" | ".join(str(x) for x in row))
-        except Exception as e:
-            print("⚠️ Error in reading Relay:", e)
-        finally:
-            conn.close()
-
-async def checkWifi() -> str:
+def checkWifi() -> bool:
     try:
         url = "https://www.google.com"
         urllib.request.urlopen(url, timeout=5)
-        return "Connected"
+        return True
     except:
-        return "Not connected"
+        return False
+
+def getTime() -> str:
+    current_time = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+    return current_state
+
+def searchMacAddressInDB(deviceType: str) -> str: # not sure if it works
+    conn = sqlite3.connect("jarvis_db.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT DeviceMACID FROM Devices
+        WHERE DeviceType = ?
+    """, (deviceType,))
+    result = cursor.fetchone()
+    conn.close()
+    return result[0] if result else ""
 
 async def main():
     # Стартираме voice loop в отделен thread
     threading.Thread(target=lambda: asyncio.run(recognize_loop()), daemon=True).start()
     # Стартираме DB loop в asyncio
     asyncio.create_task(db_loop())
+    asyncio.create_task(dht_loop())
 
     print("🚀 Стартирам WebSocket сървър на ws://localhost:8765 ...")
     async with websockets.serve(handler, "localhost", 8765):
