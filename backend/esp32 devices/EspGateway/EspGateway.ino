@@ -85,6 +85,69 @@ void loop() {
       }
     } 
 
+    if (input.startsWith("get2 ")) { 
+      // Remove "get2 " from the front
+      String rest = input.substring(5);
+      rest.trim();
+
+      // Find space between MAC and extra data
+      int spaceIndex = rest.indexOf(' ');
+      if (spaceIndex == -1) {
+          Serial.println("Invalid format! Use: get2 xx:xx:xx:xx:xx:xx [values] - [labels]");
+          return;
+      }
+
+      String macStr = rest.substring(0, spaceIndex);
+      String extraPart = rest.substring(spaceIndex + 1);
+      extraPart.trim();
+
+      // Now extraPart should look like: "[122;122;122;100] - [Red;Blue;Green;Intensity]"
+      int dashIndex = extraPart.indexOf('-');
+      if (dashIndex == -1) {
+          Serial.println("Invalid format! Missing '-' between values and labels");
+          return;
+      }
+
+      String valuesPart = extraPart.substring(0, dashIndex);
+      String labelsPart = extraPart.substring(dashIndex + 1);
+      valuesPart.trim();
+      labelsPart.trim();
+
+      uint8_t peerMac[6];
+      if (!parseMacAddress(macStr, peerMac)) {
+          Serial.println("Invalid MAC format! Use xx:xx:xx:xx:xx:xx");
+          return;
+      }
+
+      esp_now_peer_info_t peerInfo = {};
+      memcpy(peerInfo.peer_addr, peerMac, 6);
+      peerInfo.channel = 0; // канал 0 за текущия WiFi канал
+      peerInfo.encrypt = false;
+
+      if (!esp_now_is_peer_exist(peerMac)) {
+          if (esp_now_add_peer(&peerInfo) != ESP_OK) {
+              Serial.println("Failed to add peer");
+              return;
+          }
+      }
+
+      // Prepare message: "GET2 [values] - [labels]"
+      String msg = "GET2 " + valuesPart + " - " + labelsPart;
+
+      esp_err_t result = esp_now_send(peerMac, (uint8_t *)msg.c_str(), msg.length());
+      if (result == ESP_OK) {
+          Serial.print("Request sent to ");
+          Serial.print(macStr);
+          Serial.print(" with values ");
+          Serial.print(valuesPart);
+          Serial.print(" and labels ");
+          Serial.println(labelsPart);
+      } else {
+          Serial.print("Send error: ");
+          Serial.println(result);
+      }
+    }
+
     else if(input.startsWith("init ")){
       String macStr = input.substring(5);
 

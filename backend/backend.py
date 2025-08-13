@@ -578,7 +578,7 @@ def sendGetToDevice(macAddress: str) -> str:
     print("Connection is ended.")
     return line
 
-def sendGetToDevice(macAddress:str, message:str) -> str:
+def sendGetToDevice(macAddress:str, message:str, deviceType:str) -> str:
     try:
         ser = serial.Serial(PORT, BAUD_RATE, timeout=5)
         time.sleep(2)  # Изчаква ESP-то да стартира
@@ -587,17 +587,33 @@ def sendGetToDevice(macAddress:str, message:str) -> str:
         print("Error in opening the serial port:", e)
         exit(1)
 
-    # Изпращаме командата "get"
-    ser.write(f'get2 {macAddress} {message}\n'.encode())
-    print("🔁 Sent: get2")
+    if(deviceType == "IR"):
+        # Изпращаме командата "get2"
+        ser.write(f'get2 {macAddress} {message}\n'.encode())
+        print("🔁 Sent: get2")
 
-    # Четем отговора на ESP-то
-    while True:
-        if ser.in_waiting > 0:
-            line = ser.readline().decode('utf-8', errors='ignore').strip()
-            if line:
-                print("📥 Received:", line)
-                break
+        # Четем отговора на ESP-то
+        while True:
+            if ser.in_waiting > 0:
+                line = ser.readline().decode('utf-8', errors='ignore').strip()
+                if line:
+                    print("📥 Received:", line)
+                    break
+                
+    elif(deviceType == "RGB"):
+        # Изпращаме командата "get2"
+        messageToSend = message + " - " + "[Red;Green;Blue;Intensity]"
+
+        ser.write(f'get2 {macAddress} {messageToSend}\n'.encode())
+        print("🔁 Sent: get2")
+
+        # Четем отговора на ESP-то
+        while True:
+            if ser.in_waiting > 0:
+                line = ser.readline().decode('utf-8', errors='ignore').strip()
+                if line:
+                    print("📥 Received:", line)
+                    break
 
     ser.close()
     print("Connection is ended.")
@@ -610,12 +626,16 @@ async def checkDHTSensor():
     temperature = None
     humidity = None
 
-    # Parse the received data
-    for line in data.splitlines(): # not sure about this
-        if "Temperature:" in line:
-            temperature = line.split(":")[1].strip()
-        elif "Humidity:" in line:
-            humidity = line.split(":")[1].strip()
+        # Example data: "T:23.5f,H:22.0f"
+    try:
+        parts = data.split(',')
+        for part in parts:
+            if part.startswith("T:"):
+                temperature = part.split(":")[1].replace("f", "").strip()
+            elif part.startswith("H:"):
+                humidity = part.split(":")[1].replace("f", "").strip()
+    except Exception as e:
+        print("Error parsing DHT data:", e)
 
     # Insert into DHT table
     conn = sqlite3.connect("jarvis_db.db")
