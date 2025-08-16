@@ -366,6 +366,7 @@
 
 
 import asyncio
+from email.mime import text
 import websockets
 import json
 import speech_recognition as sr
@@ -381,9 +382,17 @@ import google.generativeai as genai
 from ollama import chat
 from ollama import ChatResponse
 
+import argostranslate.package
+import argostranslate.translate
+
 from elevenlabs.client import ElevenLabs
 from elevenlabs import play
 from elevenlabs import voices
+
+from gtts import gTTS
+from io import BytesIO
+from pydub import AudioSegment
+from pydub.playback import play
 
 import serial
 import time
@@ -450,14 +459,16 @@ async def synthesize_speech(text: str):
     except Exception as e:
         print(f"[{current_state}] Грешка при синтез и възпроизвеждане: {e}")
 
-async def synthesize_speech_offline(text: str): # TODO needs to be done some reaserch about offline alternatives
-    print(f"[{current_state}] Синтезирам реч офлайн: '{text}'...")
-    try:
-        audio = client.generate(text=text, voice=ELEVENLABS_VOICE_ID)
-        play(audio)
-        print(f"[{current_state}] Аудиото е възпроизведено.")
-    except Exception as e:
-        print(f"[{current_state}] Грешка при синтез и възпроизвеждане: {e}")
+async def synthesize_speech_offline(text: str):
+    # Generate TTS in memory
+    tts = gTTS(text=text, lang='bg')
+    fp = BytesIO()
+    tts.write_to_fp(fp)
+    fp.seek(0)
+
+    # Load and play audio
+    audio = AudioSegment.from_file(fp, format="mp3")
+    play(audio)
 
 async def get_gemini_response(prompt: str) -> str:
     print(f"[{current_state}] Изпращам промпт към Gemini: '{prompt}'...")
@@ -476,7 +487,7 @@ async def get_gemini_response(prompt: str) -> str:
 async def get_tiny_llama_response(prompt:str ) -> str: # TODO not sure if this works, needs testing
     print(f"[{current_state}] Изпращам промпт към Локалния модел (tiny llama): '{prompt}'...")
     
-    response: ChatResponse = chat(model='gemma3', messages=[
+    response: ChatResponse = chat(model='tinyllama', messages=[
     {
         'role': 'user',
         'content': {prompt},
@@ -484,8 +495,12 @@ async def get_tiny_llama_response(prompt:str ) -> str: # TODO not sure if this w
     ])
 
     print(response['message']['content'])
-    print(response.message.content)
-    return response.message.content
+
+    # Translate
+    translatedText = argostranslate.translate.translate(response['message']['content'], "en", "bg")
+
+    print(translatedText)
+    return translatedText
 
 async def send_to_all(message):
     if clients:
@@ -515,13 +530,15 @@ async def recognize_loop():
                 if(checkWifi()):
                     model_answer = await get_gemini_response(user_command)
                 else:
-                    model_answer = await get_tiny_llama_response(user_command)
+                    # Translate
+                    translatedText = argostranslate.translate.translate(user_command, "bg", "en")
+                    model_answer = await get_tiny_llama_response(translatedText)
 
                 if model_answer:
                     if(checkWifi()):
                         await synthesize_speech(model_answer)
                     else:
-                        await synthesize_speech(model_answer)
+                        await synthesize_speech_offline(model_answer)
             else:
                 print("⚠️ Не разбрах командата след 'Джарвис'.")
         else:

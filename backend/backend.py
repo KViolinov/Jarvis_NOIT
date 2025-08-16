@@ -24,12 +24,3 @@ if __name__ == '__main__':
     webview.start()
 
 
-# import pyttsx3
-# engine = pyttsx3.init()
-# voices = engine.getProperty('voices')
-# for voice in voices:
-#     print(voice.id, getattr(voice, 'languages', None), voice.name)
-
-# engine.setProperty('voice', 'bg')  # or whatever ID indicates Bulgarian
-# engine.say("Здравей, свят")
-# engine.runAndWait()
