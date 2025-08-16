@@ -378,22 +378,27 @@ import sqlite3
 import urllib
 from dotenv import load_dotenv
 
+# Libs for Online/Offline Models
 import google.generativeai as genai
 from ollama import chat
 from ollama import ChatResponse
 
+# libs for Translation
 import argostranslate.package
 import argostranslate.translate
 
+# Libs for Online TTS
 from elevenlabs.client import ElevenLabs
 from elevenlabs import play
 from elevenlabs import voices
 
+# Libs for Offline TTS
 from gtts import gTTS
 from io import BytesIO
 from pydub import AudioSegment
 from pydub.playback import play
 
+# Libs for Serial Communication with ESP32
 import serial
 import time
 from datetime import datetime
@@ -401,7 +406,7 @@ from datetime import datetime
 PORT = 'COM4'
 BAUD_RATE = 115200
 
-# --- Конфигурация за кирилица ---
+# Configurations for Cyrillic
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
@@ -832,9 +837,9 @@ def searchMacAddressInDB(deviceType: str) -> str: # TODO not sure if it works
     return result[0] if result else ""
 
 async def main():
-    # Стартираме voice loop в отделен thread
+    # Starting voice loop in separate thread
     threading.Thread(target=lambda: asyncio.run(recognize_loop()), daemon=True).start()
-    # Стартираме DB loop в asyncio
+    # Starting DB loop in asyncio
     asyncio.create_task(db_loop())
     asyncio.create_task(dht_loop())
 
