@@ -22,5 +22,3 @@ if __name__ == '__main__':
 
     webview.create_window("Jarvis UI", "http://127.0.0.1:5000", fullscreen=True)
     webview.start()
-
-
