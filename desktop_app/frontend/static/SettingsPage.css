@@ -1,0 +1,155 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: url('../images/background.jpg') no-repeat center center fixed;
+    background-size: cover;
+    color: #fff;
+}
+ 
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 30px;
+    background: rgba(0, 0, 0, 0.6);
+}
+ 
+.navbar h2 {
+    margin: 0;
+}
+ 
+.navbar .date {
+    font-size: 14px;
+    opacity: 0.8;
+}
+ 
+.search-container {
+    display: flex;
+    align-items: center;
+}
+ 
+.search-container input {
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+}
+ 
+.search-btn {
+    margin-left: 5px;
+    background: #6a5acd;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #fff;
+}
+ 
+.toggle-btn {
+    margin-left: 10px;
+    background: #6a5acd;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #fff;
+}
+ 
+.profile-card {
+    max-width: 800px;
+    margin: 40px auto;
+    background: rgba(0, 0, 0, 0.75);
+    border-radius: 10px;
+    padding: 20px;
+}
+ 
+.profile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+ 
+.avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    margin-right: 15px;
+}
+ 
+.profile-info h3 {
+    margin: 0;
+}
+ 
+.edit-btn {
+    background: #6a5acd;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #fff;
+}
+ 
+.profile-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 20px;
+}
+ 
+.form-group label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+ 
+.form-group input {
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+}
+ 
+.add-email-btn {
+    margin-top: 20px;
+    background: #6a5acd;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #fff;
+}
+ 
+.email-list {
+    margin-top: 20px;
+}
+ 
+.email-list p {
+    margin: 8px 0;
+    font-size: 14px;
+}
+ 
+.email-list small {
+    opacity: 0.6;
+    margin-left: 10px;
+}
+ 
+.bottom-nav {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    gap: 20px;
+    padding: 10px 20px;
+    border-radius: 15px;
+}
+ 
+.bottom-nav button {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+}

@@ -1,0 +1,326 @@
+:root {
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --text-light: #e0e0e0;
+    --text-dark: #333;
+    --primary-color: #7a82ed;
+    --secondary-color: #a7b0f2;
+    --gradient-start: #6a74da;
+    --gradient-end: #8e95ed;
+    --on-color: #6edc6e;
+    --off-color: #ccc;
+    --box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+ 
+body {
+    background: url('../images/background.jpg') no-repeat center center fixed;
+    background-size: cover;
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    color: var(--text-light);
+    overflow: hidden;
+}
+ 
+.dashboard-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: auto auto 1fr auto;
+    gap: 20px;
+    padding: 30px;
+    width: 90%;
+    max-width: 1200px;
+    background: var(--glass-bg);
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--box-shadow);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 1;
+}
+ 
+.dashboard-item {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 15px;
+    padding: 20px;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    box-sizing: border-box;
+}
+ 
+.header {
+    grid-column: 1 / span 3;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+ 
+.header .user-profile {
+    display: flex;
+    align-items: center;
+}
+ 
+.header .user-profile img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    border: 2px solid var(--secondary-color);
+}
+ 
+.time-weather {
+    grid-column: 1 / span 2;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+ 
+.current-time {
+    font-size: 5em;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: white;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+ 
+.weather-info {
+    display: flex;
+    align-items: center;
+    font-size: 1.2em;
+}
+ 
+.weather-info i {
+    margin-right: 10px;
+    color: gold;
+}
+ 
+.lights-control {
+    grid-column: 3 / span 1;
+    min-height: 180px;
+}
+ 
+.lights-control h3 {
+    margin-top: 0;
+    color: var(--secondary-color);
+}
+ 
+.light-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    width: 100%;
+}
+ 
+.light-item span {
+    flex-grow: 1;
+}
+ 
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 24px;
+}
+ 
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+ 
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--off-color);
+    transition: .4s;
+    border-radius: 24px;
+}
+ 
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+ 
+input:checked+.slider {
+    background-color: var(--on-color);
+}
+ 
+input:checked+.slider:before {
+    transform: translateX(16px);
+}
+ 
+.home-temp,
+.home-humidity {
+    grid-column: span 1;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+ 
+.home-temp h3,
+.home-humidity h3 {
+    font-size: 1.5em;
+    margin-bottom: 5px;
+    color: white;
+}
+ 
+.home-temp .value,
+.home-humidity .value {
+    font-size: 2.2em;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+ 
+.progress-bar-container {
+    width: 80%;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    height: 10px;
+    overflow: hidden;
+    margin: 0 auto;
+}
+ 
+.progress-bar {
+    height: 100%;
+    width: 50%;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 10px;
+}
+ 
+.jarvis-section {
+    grid-column: 3 / span 1;
+    min-height: 200px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5em;
+    color: var(--text-light);
+    text-align: center;
+    position: relative;
+    box-sizing: border-box;
+}
+ 
+.jarvis-section canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    display: block;
+    overflow: hidden;
+}
+ 
+.jarvis-section h3 {
+    z-index: 1;
+    position: relative;
+    margin-bottom: 0;
+}
+ 
+.nav-icons {
+    grid-column: 1 / span 3;
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 10px;
+}
+ 
+.nav-icons .icon-btn {
+    font-size: 1.8em;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 15px;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+ 
+.nav-icons .icon-btn:hover {
+    transform: translateY(-5px) scale(1.1);
+    color: var(--primary-color);
+    background: rgba(255, 255, 255, 0.15);
+}
+ 
+.nav-icons .icon-btn.active {
+    color: var(--primary-color);
+    box-shadow: 0 0 15px rgba(122, 130, 237, 0.6);
+}
+ 
+@media (max-width: 768px) {
+    .dashboard-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto auto auto auto auto;
+        padding: 20px;
+    }
+ 
+    .header,
+    .time-weather,
+    .lights-control,
+    .home-temp,
+    .home-humidity,
+    .jarvis-section,
+    .nav-icons {
+        grid-column: 1 / span 1;
+    }
+ 
+    .time-weather {
+        text-align: center;
+    }
+ 
+    .current-time {
+        font-size: 4em;
+    }
+ 
+    .weather-info {
+        justify-content: center;
+    }
+ 
+    .nav-icons {
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+ 
+    .nav-icons .icon-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5em;
+    }
+}

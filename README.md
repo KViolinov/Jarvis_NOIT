@@ -13,7 +13,7 @@ Jarvis Hub е open-source екосистема, създадена за конт
 
 ## 🚀 Използвани технологии
 
-* **Frontend:** `JavaScript`, `HTML`, `CSS` и `Electron` за приложението и платформата.
+* **Frontend:** `JavaScript`, `HTML`, `CSS` и `PyWebView`
 
 * **Мобилно приложение:** `Kotlin` и `XML`
 
@@ -21,4 +21,4 @@ Jarvis Hub е open-source екосистема, създадена за конт
 
 * **База данни:** `SQLite` и `MariaDB` за сихронизация в реално време
 
-* **AI/ML:** `Google Gemini 1.5 flash model` и `TinyLlama`(for text summarization, entity extraction, and question generation)
+* **AI/ML:** `Google Gemini 1.5 flash model` и `TinyLlama`

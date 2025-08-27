@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+ 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Device Manager</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="frontend/static/DevisesPage.css">
+</head>
+ 
+<body>
+    <div class="bg-image"></div>
+ 
+    <div class="app">
+        <div class="content">
+            <section id="page-1" class="page active">
+                <div class="topbar text-center mb-4">
+                    <h2 class="text-white mb-1">Smart Home</h2>
+                    <p class="text-white-50">Manage your connected devices</p>
+                </div>
+ 
+                <div class="row gy-3" aria-label="Device panels" id="deviceGrid">
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="card panel device-card" data-device="bar-lights">
+                            <div class="card-body text-center">
+                                <div class="device-icon mb-2">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                        <path
+                                            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                    </svg>
+                                </div>
+                                <h6 class="mb-1">Bar Lights</h6>
+                                <small class="text-white-50">Living Room</small>
+                                <div class="device-status mt-2">
+                                    <span class="status-dot active"></span>
+                                    <small>Online</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+ 
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="card panel device-card" data-device="piano-lights">
+                            <div class="card-body text-center">
+                                <div class="device-icon mb-2">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                        <path
+                                            d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 14H9v-6h6v6z" />
+                                    </svg>
+                                </div>
+                                <h6 class="mb-1">Piano Lights</h6>
+                                <small class="text-white-50">Music Room</small>
+                                <div class="device-status mt-2">
+                                    <span class="status-dot active"></span>
+                                    <small>Online</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+ 
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="card panel device-card" data-device="main-lamp">
+                            <div class="card-body text-center">
+                                <div class="device-icon mb-2">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                        <path
+                                            d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z" />
+                                    </svg>
+                                </div>
+                                <h6 class="mb-1">Main Lamp</h6>
+                                <small class="text-white-50">Bedroom</small>
+                                <div class="device-status mt-2">
+                                    <span class="status-dot offline"></span>
+                                    <small>Offline</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+ 
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="card panel device-card" data-device="desk-lamp">
+                            <div class="card-body text-center">
+                                <div class="device-icon mb-2">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                        <path
+                                            d="M15 4V2c0-.55-.45-1-1-1s-1 .45-1 1v2h2zM8.5 10.5v1h2v-1h-2zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69zM12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" />
+                                    </svg>
+                                </div>
+                                <h6 class="mb-1">Desk Lamp</h6>
+                                <small class="text-white-50">Office</small>
+                                <div class="device-status mt-2">
+                                    <span class="status-dot active"></span>
+                                    <small>Online</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+ 
+                <div class="d-flex justify-content-center mt-4">
+                    <button id="addDeviceBtn" class="btn btn-primary btn-lg d-flex align-items-center gap-2">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2z" />
+                        </svg>
+                        Add Device
+                    </button>
+                </div>
+            </section>
+ 
+            <section id="page-2" class="page">
+                <div class="row mb-3 align-items-center">
+                    <div class="col-1">
+                        <button id="backBtn" class="btn btn-outline-light" title="Back">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="col-11">
+                        <h4 class="text-white mb-0">Add New Device</h4>
+                    </div>
+                </div>
+ 
+                <div class="card mx-auto" style="max-width: 520px;">
+                    <div class="card-body">
+                        <form id="deviceForm" autocomplete="off">
+                            <div class="mb-3">
+                                <label for="mac" class="form-label">Device's MAC Address</label>
+                                <input type="text" class="form-control" id="mac" placeholder="00:1B:44:11:3A:B7"
+                                    required>
+                                <div class="form-text">Enter the MAC address found on your device</div>
+                            </div>
+ 
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Device Name</label>
+                                <input type="text" class="form-control" id="name" placeholder="Living Room Light"
+                                    required>
+                                <div class="form-text">Choose a friendly name for your device</div>
+                            </div>
+ 
+                            <div class="mb-3">
+                                <label for="location" class="form-label">Location</label>
+                                <input type="text" class="form-control" id="location" placeholder="Living Room"
+                                    required>
+                                <div class="form-text">Where is this device located?</div>
+                            </div>
+ 
+                            <div class="mb-4">
+                                <label for="type" class="form-label">Device Type</label>
+                                <select class="form-select" id="type" required>
+                                    <option value="">Choose device type...</option>
+                                    <option value="Lamp">Smart Lamp</option>
+                                    <option value="Relay">Smart Switch/Relay</option>
+                                    <option value="Sensor">Sensor</option>
+                                    <option value="Plug">Smart Plug</option>
+                                    <option value="Thermostat">Thermostat</option>
+                                </select>
+                            </div>
+ 
+                            <div class="d-flex justify-content-between">
+                                <button type="button" id="cancelBtn" class="btn btn-outline-secondary">Cancel</button>
+                                <button type="submit" class="btn btn-success">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="me-1">
+                                        <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
+                                    </svg>
+                                    Save Device
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+ 
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="successToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-success text-white">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="me-2">
+                    <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
+                </svg>
+                <strong class="me-auto">Success</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toastMessage">
+                Device added successfully!
+            </div>
+        </div>
+    </div>
+ 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="frontend/static/DevisesPage.js"></script>
+</body>
+ 
+
+    </html>
