@@ -24,7 +24,12 @@ body {
     color: var(--text-light);
     overflow: hidden;
 }
- 
+
+a {
+  text-decoration: none !important;
+  color: inherit !important;
+}
+
 .dashboard-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);

@@ -13,7 +13,7 @@
 }
 
 body {
-    background: url('images/background.jpg') no-repeat center center fixed;
+    background: url('images/background_2.jpg') no-repeat center center fixed;
     background-size: cover;
     font-family: 'Poppins', sans-serif;
     display: flex;
@@ -24,6 +24,12 @@ body {
     color: var(--text-light);
     overflow: hidden;
 }
+
+a {
+  text-decoration: none !important;
+  color: inherit !important;
+}
+
 
 .dashboard-container {
     display: grid;
