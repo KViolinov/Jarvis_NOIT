@@ -86,6 +86,17 @@ a {
     border: 2px solid var(--secondary-color);
 }
 
+.home-title {
+    font-size: 2em;   /* или 32px, зависи какво предпочиташ */
+    font-weight: bold;
+    color: white;     /* ако искаш да изпъква повече */
+}
+
+#greeting-text {
+    font-size: 1.5em;   /* или 32px, зависи какво предпочиташ */
+    color: white;     /* ако искаш да изпъква повече */
+}
+
 .time-weather {
     grid-column: 1 / span 2;
     min-height: 180px;
@@ -95,11 +106,12 @@ a {
 }
 
 .current-time {
-    font-size: 5em;
+    font-size: 7em;
     font-weight: 600;
     margin-bottom: 10px;
     color: white;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    align-self: center; /* ⬅️ центрира само часа */
 }
 
 .weather-info {
@@ -121,6 +133,11 @@ a {
 .lights-control h3 {
     margin-top: 0;
     color: var(--secondary-color);
+}
+
+.lights-title {
+    font-size: 2em;   /* по-голямо от нормалното h3 */
+    color: white;     /* ако искаш да изпъква */
 }
 
 .light-item {

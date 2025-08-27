@@ -15,7 +15,8 @@
         <div class="header">
             <div class="home-title">Home</div>
             <div class="user-profile">
-                <img src="{{ url_for('static', filename='images/test_profile_picture_cropped.jpg') }}" alt="User Avatar"> <span>Hello, Konstantin</span>
+                <img src="{{ url_for('static', filename='images/test_profile_picture_cropped.jpg') }}" alt="User Avatar"> 
+                <span id="greeting-text">Здравейте, Константин</span>
             </div>
         </div>
 
@@ -23,38 +24,38 @@
             <div class="current-time">15:51</div>
             <div class="weather-info">
                 <i class="fas fa-sun"></i>
-                <div>
+                <div id="weather-text">
                     34.5°C<br>
-                    Veliko Tarnovo - Sunny
+                    Велико Търново - Sunny
                 </div>
             </div>
         </div>
 
         <div class="dashboard-item lights-control">
-            <h3>&bull; Lights</h3>
+            <h3 class="lights-title">Лампи</h3>
             <div class="light-item">
-                <span>Bar Lights</span>
+                <span>Светлини в бара</span>
                 <label class="toggle-switch">
                     <input type="checkbox" checked>
                     <span class="slider"></span>
                 </label>
             </div>
             <div class="light-item">
-                <span>Main Lamp</span>
+                <span>Лампион</span>
                 <label class="toggle-switch">
                     <input type="checkbox">
                     <span class="slider"></span>
                 </label>
             </div>
             <div class="light-item">
-                <span>Piano Lights</span>
+                <span>Светлини пиано</span>
                 <label class="toggle-switch">
                     <input type="checkbox" checked>
                     <span class="slider"></span>
                 </label>
             </div>
             <div class="light-item">
-                <span>Desk Lamp</span>
+                <span>Настолна лампа</span>
                 <label class="toggle-switch">
                     <input type="checkbox">
                     <span class="slider"></span>
@@ -63,7 +64,7 @@
         </div>
 
         <div class="dashboard-item home-temp">
-            <h3>Home Temperature</h3>
+            <h3>Температура</h3>
             <div class="value">26.38 °C</div>
             <div class="progress-bar-container">
                 <div class="progress-bar" style="width: 70%;"></div>
@@ -71,7 +72,7 @@
         </div>
 
         <div class="dashboard-item home-humidity">
-            <h3>Home Humidity</h3>
+            <h3>Влажност</h3>
             <div class="value">47.36 %</div>
             <div class="progress-bar-container">
                 <div class="progress-bar" style="width: 47%;"></div>

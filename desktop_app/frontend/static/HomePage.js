@@ -12,6 +12,81 @@ document.addEventListener('DOMContentLoaded', () => {
     updateTime();
     setInterval(updateTime, 60000);
 
+    function updateGreeting() {
+            const greetingTextElement = document.getElementById('greeting-text');
+            const hour = new Date().getHours();
+
+            let greeting = 'Здравейте, Константин';
+
+            if (hour >= 5 && hour < 12) {
+                greeting = 'Добро утро, Константин';
+            } else if (hour >= 12 && hour < 18) {
+                greeting = 'Добър ден, Константин';
+            } else {
+                greeting = 'Добър вечер, Константин';
+            }
+
+            greetingTextElement.textContent = greeting;
+        }
+
+    updateGreeting(); 
+    setInterval(updateGreeting, 60 * 60 * 1000); 
+
+   // 🌦️ Weather update logic with Open-Meteo
+    async function updateWeather() {
+        const weatherElement = document.querySelector('.weather-info div');
+        const iconElement = document.querySelector('.weather-info i');
+
+        const city = 'Велико Търново';
+        const lat = 43.083652325433626;
+        const lon = 25.62943277673674;
+
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+
+            const temp = Math.round(data.current_weather.temperature * 10) / 10;
+            const conditionCode = data.current_weather.weathercode;
+
+            // Update weather text
+            weatherElement.innerHTML = `${temp}°C<br>${city}`;
+
+            // Map Open-Meteo weather codes to FontAwesome icons
+            const iconMap = {
+                0: 'fa-sun',                // Clear sky
+                1: 'fa-cloud-sun',          // Mainly clear
+                2: 'fa-cloud',              // Partly cloudy
+                3: 'fa-cloud',              // Overcast
+                45: 'fa-smog',              // Fog
+                48: 'fa-smog',              // Depositing rime fog
+                51: 'fa-cloud-rain',        // Light drizzle
+                53: 'fa-cloud-rain',        // Moderate drizzle
+                55: 'fa-cloud-rain',        // Dense drizzle
+                61: 'fa-cloud-showers-heavy', // Slight rain
+                63: 'fa-cloud-showers-heavy', // Moderate rain
+                65: 'fa-cloud-showers-heavy', // Heavy rain
+                71: 'fa-snowflake',         // Slight snow fall
+                73: 'fa-snowflake',         // Moderate snow fall
+                75: 'fa-snowflake',         // Heavy snow fall
+                95: 'fa-bolt',              // Thunderstorm
+                96: 'fa-bolt',              // Thunderstorm with hail
+                99: 'fa-bolt'               // Thunderstorm with heavy hail
+            };
+
+            const iconClass = iconMap[conditionCode] || 'fa-question';
+            iconElement.className = `fas ${iconClass}`;
+        } catch (error) {
+            console.error('Failed to fetch weather:', error);
+            weatherElement.innerHTML = `${city} - Weather Unavailable`;
+        }
+    }
+
+    updateWeather();
+    setInterval(updateWeather, 10 * 60 * 1000); // Update every 10 minutes
+
+
     // Jarvis animation logic
     const canvas = document.getElementById('canvas');
     if (!canvas) {
