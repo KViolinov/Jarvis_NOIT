@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Home Dashboard</title>
-    <link rel="stylesheet" href="frontend/static/HomePage.css">
+    <!-- <link rel="stylesheet" href="desktop_app\frontend\static\HomePage.css"> -->
+     <link rel="stylesheet" href="{{ url_for('static', filename='HomePage.css') }}">
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -82,12 +84,17 @@
 
         <div class="nav-icons">
             <div class="icon-btn active"><i class="fas fa-home"></i></div>
-            <div class="icon-btn"><i class="fas fa-chart-line"></i></div>
-            <div class="icon-btn"><i class="fas fa-bell"></i></div>
-            <div class="icon-btn"><i class="fas fa-cog"></i></div>
-            <div class="icon-btn"><i class="fas fa-user"></i></div>
+            <a href="{{ url_for('devices') }}">
+                <div class="icon-btn"><i class="fas fa-microchip"></i></div>
+            </a>
+            <a href="{{ url_for('settings') }}">
+                <div class="icon-btn"><i class="fas fa-cog"></i></div>
+            </a>
+            <a href="{{ url_for('profile') }}">
+                <div class="icon-btn"><i class="fas fa-user"></i></div>
+            </a>
         </div>
     </div>
-    <script src="frontend/static/HomePage.js"></script>
+    <script src="{{ url_for('static', filename='HomePage.js') }}"></script>
 </body>
 </html>
