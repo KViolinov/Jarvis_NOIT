@@ -1,4 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const loadingScreen = document.getElementById('loading-screen');
+
+    setTimeout(() => {
+        if (loadingScreen) {
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 500); // Wait for fade-out transition
+        }
+    }, 10000); // Show loading screen for 10 seconds
+    
     // Time update logic
     function updateTime() {
         const timeElement = document.querySelector('.current-time');
