@@ -8,18 +8,18 @@
      <link rel="stylesheet" href="{{ url_for('static', filename='HomePage.css') }}">
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
 
-    <div id="loading-screen">
+    <!-- <div id="loading-screen">
         <img src="{{ url_for('static', filename='images/jarvis_logo_transparent.png') }}" alt="Jarvis Logo" class="loading-logo">
-    </div>
+    </div> -->
 
 
     <div class="dashboard-container">
         <div class="header">
-            <div class="home-title">Home</div>
+            <div class="home-title">Jarvis Hub OS</div>
             <div class="user-profile">
                 <img src="{{ url_for('static', filename='images/test_profile_picture_cropped.jpg') }}" alt="User Avatar"> 
                 <span id="greeting-text">Здравейте, Константин</span>
@@ -37,37 +37,24 @@
             </div>
         </div>
 
-        <div class="dashboard-item lights-control">
-            <h3 class="lights-title">Лампи</h3>
-            <div class="light-item">
-                <span>Светлини в бара</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="light-item">
-                <span>Лампион</span>
-                <label class="toggle-switch">
-                    <input type="checkbox">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="light-item">
-                <span>Светлини пиано</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="light-item">
-                <span>Настолна лампа</span>
-                <label class="toggle-switch">
-                    <input type="checkbox">
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </div>
+        <div class="lights-control">
+        <button class="dashboard-item light-item">
+            <span>Светлини в бара</span>
+            <i class="fa-solid fa-computer"></i>
+        </button>
+        <button class="dashboard-item light-item">
+            <span>Лампион</span>
+            <i class="fa-solid fa-computer"></i>
+        </button>
+        <button class="dashboard-item light-item">
+            <span>Светлини пиано</span>
+            <i class="fa-solid fa-computer"></i>
+        </button>
+        <button class="dashboard-item light-item">
+            <span>Настолна лампа</span>
+            <i class="fa-solid fa-computer"></i>
+        </button>
+    </div>
 
         <div class="dashboard-item home-temp">
             <h3>Температура</h3>

@@ -97,6 +97,23 @@ document.addEventListener('DOMContentLoaded', () => {
     updateWeather();
     setInterval(updateWeather, 10 * 60 * 1000); // Update every 10 minutes
 
+    // Get all the button elements
+const lightButtons = document.querySelectorAll('.dashboard-item');
+
+// Add a click listener to each one
+lightButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        // This is the magic line!
+        // It adds the '.active' class if it's not there,
+        // and removes it if it is.
+        button.classList.toggle('active');
+
+        // You can still perform other actions here
+        const buttonText = button.querySelector('span').textContent;
+        console.log(`${buttonText} state was toggled.`);
+    });
+});
+
 
     // Jarvis animation logic
     const canvas = document.getElementById('canvas');

@@ -86,9 +86,10 @@ a {
     border: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     display: flex;
-    flex-direction: column;
+    /* flex-direction: column; */
     justify-content: center;
-    align-items: flex-start;
+    /* align-items: flex-start; */
+    flex-wrap: wrap;
     box-sizing: border-box;
 }
 
@@ -111,6 +112,7 @@ a {
     height: 40px;
     border-radius: 50%;
     margin-right: 10px;
+    object-fit: cover;
     border: 2px solid var(--secondary-color);
 }
 
@@ -153,8 +155,17 @@ a {
     color: gold;
 }
 
+#weather-text {
+    font-weight: bold;
+}
+
 .lights-control {
-    grid-column: 3 / span 1;
+    /* grid-column: 3 / span 1; */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    /* justify-content: center; */
+    /* gap: 10px; */
     min-height: 180px;
 }
 
@@ -170,14 +181,35 @@ a {
 
 .light-item {
     display: flex;
-    justify-content: space-between;
+    /* justify-content: space-between; */
     align-items: center;
-    margin-bottom: 15px;
-    width: 100%;
+    /* margin-bottom: 10px; */
+    margin: 7px 0px;
+    /* margin-right: 3px; */
+    width: 48%;
+    flex-direction: column;
+    /* gap: 5px; */
+}
+
+.light-item i {
+    font-size: 1.5em;
+    color: rgb(255, 255, 255);
 }
 
 .light-item span {
-    flex-grow: 1;
+    /* flex-grow: 1; */
+    color: var(--off-color);
+    padding-bottom: 10px;
+    font-size: 18px;
+}
+
+.highlighted {
+    background-color: lightblue;
+    transition: background-color 0.3s ease;
+}
+
+.light-item.active {
+    background-color: var(--primary-color);
 }
 
 .toggle-switch {
@@ -227,16 +259,18 @@ input:checked+.slider:before {
 
 .home-temp,
 .home-humidity {
-    grid-column: span 1;
+    /* grid-column: span 1; */
     align-items: center;
     justify-content: center;
     text-align: center;
+    display: flex;
+    flex-direction: column;
 }
 
 .home-temp h3,
 .home-humidity h3 {
     font-size: 1.5em;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     color: white;
 }
 
@@ -244,7 +278,7 @@ input:checked+.slider:before {
 .home-humidity .value {
     font-size: 2.2em;
     font-weight: 500;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
 }
 
 .progress-bar-container {
