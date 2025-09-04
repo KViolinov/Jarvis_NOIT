@@ -129,12 +129,24 @@ from dotenv import load_dotenv
 
 from elevenlabs.client import ElevenLabs
 from elevenlabs import play
+from gtts import gTTS
+from io import BytesIO
+
 import google.generativeai as genai
+import ollama
+
+import argostranslate.package
+import argostranslate.translate
 
 from pathlib import Path
 
 from pydub import AudioSegment
 import pyaudio
+
+import random
+import datetime
+import urllib.request
+
 
 load_dotenv()
 
@@ -152,37 +164,37 @@ ELEVENLABS_VOICE_ID = os.getenv("ELEVENLABS_VOICE_ID")
 client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
 genai.configure(api_key=GEMINI_API_KEY)
 
-def load_system_instructions(file_path: str) -> str:
-    """Load system instructions from a text file"""
-    try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            content = file.read().strip()
-            print(f"✅ Loaded system instructions from: {file_path}")
-            return content
-    except FileNotFoundError:
-        print(f"⚠️ System instructions file not found: {file_path}")
-        print("💡 Creating default system_instructions.txt file...")
-        
-        # Create a default file
-        default_instructions = """
-        Ти си Джарвис, личният AI асистент на Константин със синтетичен глас.
+GEMINI_MODEL = genai.GenerativeModel('gemini-1.5-flash')
+system_prompt = """Ти си Джарвис, личният AI асистент на Константин. Характеристики:
+    
+    ЛИЧНОСТ:
+    - Говориш само на български език
+    - Отговаряш кратко и директно (максимум 2-3 изречения)
+    - Си професионален, но приятелски настроен
+    - Винаги си готов да помогнеш
+    - Имаш чувство за хумор, но не прекаляваш
+    
+    ВЪЗМОЖНОСТИ:
+    - Управляваш умен дом (осветление, температура, устройства)
+    - Отговаряш на въпроси за всичко
+    - Помагаш с планиране и напомняния
+    - Водиш естествени разговори
+    - Предоставяш информация за времето, новини, факти
+    
+    ПРАВИЛА:
+    - Винаги отговаряй на български
+    - Бъди кратък и точен
+    - Ако не знаеш нещо, кажи честно
+    - При управление на устройства, потвърди действието
+    - Обръщай се към потребителя като "Константин" или просто отговаряй директно"""
 
-        ОСНОВНИ ПРАВИЛА:
-        - Говориш само на български език
-        - Отговаряш кратко и директно (максимум 2-3 изречения)  
-        - Си професионален, но приятелски настроен"""
-
-        with open(file_path, 'w', encoding='utf-8') as file:
-            file.write(default_instructions)
-        print("✅ Created default system_instructions.txt")
-        return default_instructions
-        
-    except Exception as e:
-        print(f"❌ Error loading system instructions: {e}")
-        return "Ти си Джарвис, личният асистент на Константин. Отговаряй кратко на български език."
-
-system_instructions = load_system_instructions("system_instructions.txt")
-GEMINI_MODEL = genai.GenerativeModel('gemini-1.5-flash', system_instruction=system_instructions)
+jarvis_responses = [
+    "Тук съм, как мога да помогна?",
+    "Слушам, как мога да Ви асистирам?",
+    "Тук съм, как мога да помогна?",
+    "С какво мога да Ви бъда полезен?"
+    #"Слушам шефе, как да помогна?"
+]
 
 # --- Flask setup ---
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -294,7 +306,7 @@ async def send_to_all(message):
     if clients:
         await asyncio.gather(*[client.send(message) for client in clients])
 
-async def get_gemini_response(prompt: str) -> str:
+async def get_gemini_response(prompt: str) -> str: # TODO - Need to add the system prompt
     print(f"[{current_state}] Sending prompt to Gemini: '{prompt}'...", flush=True)
     try:
         response = GEMINI_MODEL.generate_content(prompt)
@@ -307,13 +319,42 @@ async def get_gemini_response(prompt: str) -> str:
         print(f"[{current_state}] Gemini API error: {e}", flush=True)
         return "Error connecting to Gemini."
 
-async def synthesize_speech(text: str):
+async def get_tiny_llama_response(prompt:str ) -> str: # TODO not sure if this works, needs testing
+    print(f"[{current_state}] Изпращам промпт към Локалния модел (tiny llama): '{prompt}'...")
+    
+    response: ChatResponse = chat(model='tinyllama', messages=[
+    {
+        'role': 'user',
+        'content': {prompt},
+    },
+    ])
+
+    print(response['message']['content'])
+
+    # Translate
+    translatedText = argostranslate.translate.translate(response['message']['content'], "en", "bg")
+
+    print(translatedText)
+    return translatedText
+
+async def synthesize_speech(text: str): 
     audio = client.text_to_speech.convert(
     text=text,
     voice_id="JBFqnCBsd6RMkjVDRZzb",
     model_id="eleven_multilingual_v2",
     output_format="mp3_44100_128",
 )
+    play(audio)
+
+async def synthesize_speech_offline(text: str):
+    # Generate TTS in memory
+    tts = gTTS(text=text, lang='bg')
+    fp = BytesIO()
+    tts.write_to_fp(fp)
+    fp.seek(0)
+
+    # Load and play audio
+    audio = AudioSegment.from_file(fp, format="mp3")
     play(audio)
 
 async def recognize_loop():
@@ -323,27 +364,58 @@ async def recognize_loop():
         print("🎧 Listening for 'Джарвис'...", flush=True)
         text = await loop.run_in_executor(None, record_text_blocking)
 
-        if text and ("джарвис" in text or "джарви" in text):
-            print("🟢 'Джарвис' recognized!", flush=True)
+        if text and any(phrase in text for phrase in ("Джарвис", "джарвис", "джарви", "Jarvis", "jarvis", "джервис")):
 
-            await asyncio.to_thread(play_flac_file, "D:\\Jarvis_NOIT\\desktop_app\\backend\\beep.flac")
+            await asyncio.to_thread(play_flac_file, "D:\\Jarvis_NOIT\\desktop_app\\backend\\additional_things\\beep.flac")
 
             await set_state("listening")
 
-            await synthesize_speech("Слушам шефе")
+            # await synthesize_speech(random.choice(jarvis_responses)) # TODO - works just online
+
+            if checkWifi():
+                await synthesize_speech(random.choice(jarvis_responses))
+            else:
+                await synthesize_speech_offline(random.choice(jarvis_responses))
 
             print("I am listening...", flush=True)
 
-            user_command = await loop.run_in_executor(None, record_text_blocking)
+            user_input = await loop.run_in_executor(None, record_text_blocking)
 
-            if user_command:
-                print(f"❓ User said: {user_command}", flush=True)
-                model_answer = await get_gemini_response(user_command)
+            if not user_input:
+                print("⚠️ Could not understand command after 'Джарвис'", flush=True)
+
+            if any(phrase in user_input for phrase in ("представи се", "представиш", "представи")):
+                synthesize_speech("Здравейте, аз съм Джарвис, акроним от (Just A Rather Very Intelligent System), аз съм езиков модел на Gemini обучен от Google."
+                                    "Вдъхновен съм от легендарния изкуствен интелект на Тони Старк – Джарвис от Железния човек."
+                                    "Моята мисия е да ви помогна с работата и управлението на вашия умен дом."
+                                    "Ако искате да ме попитате нещо, просто ме повикайте по име.")
+                continue
+
+            if any(phrase in user_input for phrase in ("ново", "устройство", "свържа", "теб")):
+                await synthesize_speech(
+                "Супер, имаш ново устройсто. Сега ще ти кажа как можеш лесно да го свържеш към Jarvis Hub-a. " \
+                "Просто отиди в страницата настройки и цъкни бутона \"Добави устройство\", " \
+                "след като си отворил новата страница просто въведи специалния Mac адрес на новото ти устройство, " \
+                "и като ти изпише на екрана \"Успех\", значи си го свързал правилно."
+                "Ако има някакви проблеми с свързването, просто ми кажи.")
+                continue
+
+            if any(phrase in user_input for phrase in ("какво", "можеш", "правиш")):
+                await synthesize_speech("Мога да търся информация в интернет, да я обобщавам и да ви я представям. "
+                                             "Също така, мога да изпращам и чета имейли, да пускам музика, да отварям нови документи в Word "
+                                             "И дори да ви опиша това, което виждам като изпозлвам Gemini Vision и OCR модел за разпознаване на текст")
+                continue
+
+            if user_input:
+                print(f"❓ User said: {user_input}", flush=True)
+                model_answer = await get_gemini_response(user_input)
                 if model_answer:
                     await set_state("answering")
-                    await synthesize_speech(model_answer)
-            else:
-                print("⚠️ Could not understand command after 'Джарвис'", flush=True)
+                    #await synthesize_speech(model_answer) # TODO - works just online
+                    if checkWifi():
+                        await synthesize_speech(model_answer)
+                    else:
+                        await synthesize_speech_offline(model_answer)
         else:
             await asyncio.sleep(0.5)
 
@@ -364,6 +436,19 @@ async def handler(websocket):
     finally:
         clients.remove(websocket)
         print(f"❌ Client disconnected: {websocket.remote_address}", flush=True)
+
+def checkWifi() -> bool:
+    try:
+        url = "https://www.google.com"
+        urllib.request.urlopen(url, timeout=5)
+        return True
+    except:
+        return False
+
+def getTime() -> str:
+    current_time = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+    return current_state
+
 
 async def jarvis_core():
     print("🚀 Jarvis WebSocket started at ws://localhost:8765", flush=True)
