@@ -365,65 +365,541 @@
 
 
 
+# import asyncio
+# from email.mime import text
+# import websockets
+# import json
+# import speech_recognition as sr
+# import sys
+# import io
+# import threading
+# import os
+# import sqlite3
+# import urllib
+# from dotenv import load_dotenv
+
+# # Libs for Online/Offline Models
+# import google.generativeai as genai
+# from ollama import chat
+# from ollama import ChatResponse
+
+# # libs for Translation
+# import argostranslate.package
+# import argostranslate.translate
+
+# # Libs for Online TTS
+# from elevenlabs.client import ElevenLabs
+# from elevenlabs import play
+# from elevenlabs import voices
+
+# # Libs for Offline TTS
+# from gtts import gTTS
+# from io import BytesIO
+# from pydub import AudioSegment
+# from pydub.playback import play
+
+# # Libs for Serial Communication with ESP32
+# import serial
+# import time
+# from datetime import datetime
+
+# PORT = 'COM4'
+# BAUD_RATE = 115200
+
+# # Configurations for Cyrillic
+# sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+# sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
+# load_dotenv()
+
+# ELEVENLABS_API_KEY = os.getenv("ELEVEN_LABS_API")
+# GEMINI_API_KEY = os.getenv("GEMINI_KEY")
+# ELEVENLABS_VOICE_ID = os.getenv("ELEVENLABS_VOICE_ID")
+
+# client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
+
+# genai.configure(api_key=GEMINI_API_KEY)
+# GEMINI_MODEL = genai.GenerativeModel('gemini-1.5-flash')
+
+# r = sr.Recognizer()
+# clients = set()
+
+# current_state = "idle"
+# state_lock = asyncio.Lock()
+
+# async def set_state(new_state: str):
+#     global current_state
+#     async with state_lock:
+#         if current_state != new_state:
+#             print(f"Changing state from '{current_state}' to '{new_state}'")
+#             current_state = new_state
+#             message = json.dumps({"state": current_state})
+#             await send_to_all(message)
+
+# def record_text_blocking():
+#     try:
+#         with sr.Microphone() as source:
+#             r.adjust_for_ambient_noise(source, duration=0.2)
+#             print(f"[{current_state}] Слушам за команда...")
+#             audio = r.listen(source)
+#             MyText = r.recognize_google(audio, language="bg-BG")
+#             print(f"[{current_state}] Вие казахте: {MyText}")
+#             return MyText.lower()
+#     except sr.RequestError as e:
+#         print(f"[{current_state}] Грешка в заявката към API-то; {e}")
+#         return None
+#     except sr.UnknownValueError:
+#         print(f"[{current_state}] Не разбрах казаното.")
+#         return None
+#     except Exception as e:
+#         print(f"[{current_state}] Неочаквана грешка: {e}")
+#         return None
+
+# async def synthesize_speech(text: str):
+#     print(f"[{current_state}] Синтезирам реч с Eleven Labs: '{text}'...")
+#     try:
+#         audio = client.generate(text=text, voice=ELEVENLABS_VOICE_ID)
+#         play(audio)
+#         print(f"[{current_state}] Аудиото е възпроизведено.")
+#     except Exception as e:
+#         print(f"[{current_state}] Грешка при синтез и възпроизвеждане: {e}")
+
+# # async def synthesize_speech_offline(text: str):
+# #     # Generate TTS in memory
+# #     tts = gTTS(text=text, lang='bg')
+# #     fp = BytesIO()
+# #     tts.write_to_fp(fp)
+# #     fp.seek(0)
+
+# #     # Load and play audio
+# #     audio = AudioSegment.from_file(fp, format="mp3")
+# #     play(audio)
+
+# async def get_gemini_response(prompt: str) -> str:
+#     print(f"[{current_state}] Изпращам промпт към Gemini: '{prompt}'...")
+#     try:
+#         response = GEMINI_MODEL.generate_content(prompt)
+#         if hasattr(response, 'text') and response.text:
+#             print(f"[{current_state}] Отговор от Gemini: {response.text}")
+#             return response.text
+#         else:
+#             print(f"[{current_state}] Gemini не върна текст.")
+#             return "Съжалявам, не мога да отговоря."
+#     except Exception as e:
+#         print(f"[{current_state}] Грешка при Gemini API: {e}")
+#         return "Грешка при свързване с Gemini."
+
+# # async def get_tiny_llama_response(prompt:str ) -> str: # TODO not sure if this works, needs testing
+# #     print(f"[{current_state}] Изпращам промпт към Локалния модел (tiny llama): '{prompt}'...")
+    
+# #     response: ChatResponse = chat(model='tinyllama', messages=[
+# #     {
+# #         'role': 'user',
+# #         'content': {prompt},
+# #     },
+# #     ])
+
+# #     print(response['message']['content'])
+
+# #     # Translate
+# #     translatedText = argostranslate.translate.translate(response['message']['content'], "en", "bg")
+
+# #     print(translatedText)
+# #     return translatedText
+
+# async def send_to_all(message):
+#     if clients:
+#         await asyncio.gather(*[client.send(message) for client in clients])
+
+# async def recognize_loop():
+#     loop = asyncio.get_running_loop()
+#     while True:
+#         await set_state("idle")
+#         print("Слушам за 'Джарвис'...")
+#         text = await loop.run_in_executor(None, record_text_blocking)
+        
+#         if text and ("джарвис" in text or "джарви" in text):
+#             print("🟢 'Джарвис' е разпознат!")
+#             await set_state("listening")
+
+#             if(checkWifi()):
+#                 await synthesize_speech("Слушам")
+#             else:
+#                 await synthesize_speech_offline("Слушам")
+
+#             user_command = await loop.run_in_executor(None, record_text_blocking)
+            
+#             if user_command:
+#                 print(f"❓ Потребителят каза: {user_command}")
+#                 await set_state("answering")
+#                 if(checkWifi()):
+#                     model_answer = await get_gemini_response(user_command)
+#                 else:
+#                     # Translate
+#                     translatedText = argostranslate.translate.translate(user_command, "bg", "en")
+#                     model_answer = await get_tiny_llama_response(translatedText)
+
+#                 if model_answer:
+#                     if(checkWifi()):
+#                         await synthesize_speech(model_answer)
+#                     else:
+#                         await synthesize_speech_offline(model_answer)
+#             else:
+#                 print("⚠️ Не разбрах командата след 'Джарвис'.")
+#         else:
+#             await asyncio.sleep(0.5)
+
+# async def handler(websocket):
+#     print(f"✅ Клиент се свърза: {websocket.remote_address}")
+#     clients.add(websocket)
+#     await websocket.send(json.dumps({"state": current_state}))
+#     try:
+#         await websocket.wait_closed()
+#     finally:
+#         print(f"❌ Клиент се разкачи: {websocket.remote_address}")
+#         clients.remove(websocket)
+
+# # def sendInitToDevice(macAddress: str) -> bool:
+# #     try:
+# #         ser = serial.Serial(PORT, BAUD_RATE, timeout=5)
+# #         time.sleep(2)  # Изчаква ESP-то да стартира
+# #         print(f"Connected to the {PORT}")
+# #     except serial.SerialException as e:
+# #         print("Error in opening the serial port:", e)
+# #         return ""  # Return empty string on error
+
+# #     ser.write(f'init {macAddress}\n'.encode())
+# #     print(f"🔁 Sent: init to {macAddress}")
+
+# #     line = ""
+# #     start_time = time.time()
+# #     while True:
+# #         if ser.in_waiting > 0:
+# #             line = ser.readline().decode('utf-8', errors='ignore').strip()
+# #             if line == "Connection Successful":
+# #                 print("📥 Received:", line)
+# #                 break
+# #         # Optional: timeout after 5 seconds
+# #         if time.time() - start_time > 5:
+# #             print("⚠️ Timeout waiting for response.")
+# #             break
+
+# #     ser.close()
+# #     print("Connection is ended.")
+# #     return True
+
+# # def sendGetToDevice(macAddress: str) -> str:
+# #     try:
+# #         ser = serial.Serial(PORT, BAUD_RATE, timeout=5)
+# #         time.sleep(2)  # Изчаква ESP-то да стартира
+# #         print(f"Connected to the {PORT}")
+# #     except serial.SerialException as e:
+# #         print("Error in opening the serial port:", e)
+# #         return ""  # Return empty string on error
+
+# #     ser.write(f'get {macAddress}\n'.encode())
+# #     print("🔁 Sent: get")
+
+# #     line = ""
+# #     start_time = time.time()
+# #     while True:
+# #         if ser.in_waiting > 0:
+# #             line = ser.readline().decode('utf-8', errors='ignore').strip()
+# #             if line:
+# #                 print("📥 Received:", line)
+# #                 break
+# #         # Optional: timeout after 5 seconds
+# #         if time.time() - start_time > 5:
+# #             print("⚠️ Timeout waiting for response.")
+# #             break
+
+# #     ser.close()
+# #     print("Connection is ended.")
+# #     return line
+
+# # def sendGetToDevice(macAddress:str, message:str, deviceType:str) -> str:
+# #     try:
+# #         ser = serial.Serial(PORT, BAUD_RATE, timeout=5)
+# #         time.sleep(2)  # Изчаква ESP-то да стартира
+# #         print(f"Connected to the {PORT}")
+# #     except serial.SerialException as e:
+# #         print("Error in opening the serial port:", e)
+# #         exit(1)
+
+# #     if(deviceType == "IR"):
+# #         # Изпращаме командата "get2"
+# #         ser.write(f'get2 {macAddress} {message}\n'.encode())
+# #         print("🔁 Sent: get2")
+
+# #         # Четем отговора на ESP-то
+# #         while True:
+# #             if ser.in_waiting > 0:
+# #                 line = ser.readline().decode('utf-8', errors='ignore').strip()
+# #                 if line:
+# #                     print("📥 Received:", line)
+# #                     break
+                
+# #     elif(deviceType == "RGB"):
+# #         # Изпращаме командата "get2"
+# #         messageToSend = message + " - " + "[Red;Green;Blue;Intensity]"
+
+# #         ser.write(f'get2 {macAddress} {messageToSend}\n'.encode())
+# #         print("🔁 Sent: get2")
+
+# #         # Четем отговора на ESP-то
+# #         while True:
+# #             if ser.in_waiting > 0:
+# #                 line = ser.readline().decode('utf-8', errors='ignore').strip()
+# #                 if line:
+# #                     print("📥 Received:", line)
+# #                     break
+
+# #     ser.close()
+# #     print("Connection is ended.")
+# #     return line
+
+# # async def checkDHTSensor():
+# #     macAddress = searchMacAddressInDB("DHT")
+# #     data = sendGetToDevice(macAddress)
+
+# #     temperature = None
+# #     humidity = None
+
+# #         # Example data: "T:23.5f,H:22.0f"
+# #     try:
+# #         parts = data.split(',')
+# #         for part in parts:
+# #             if part.startswith("T:"):
+# #                 temperature = part.split(":")[1].replace("f", "").strip()
+# #             elif part.startswith("H:"):
+# #                 humidity = part.split(":")[1].replace("f", "").strip()
+# #     except Exception as e:
+# #         print("Error parsing DHT data:", e)
+
+# #     # Insert into DHT table
+# #     conn = sqlite3.connect("jarvis_db.db")
+# #     cursor = conn.cursor()
+
+# #     time_of_record = getTime()
+    
+# #     cursor.execute("""
+# #         INSERT INTO DHT (DeviceMACID, LastTemperature, LastHumidity, TimeOfRecord)
+# #         VALUES (?, ?, ?, ?)
+# #     """, (macAddress, temperature, humidity, time_of_record))
+
+# #     conn.commit()
+# #     conn.close()
+
+# # async def checkDBforActivity():
+# #     """Проверява базата без да блокира event loop."""
+# #     def query_db():
+# #         # Searching for activity in table Relay
+# #         conn = sqlite3.connect("jarvis_db.db")
+# #         conn.row_factory = sqlite3.Row  # This allows access by column name
+# #         cursor = conn.cursor()
+# #         cursor.execute("""
+# #             SELECT * FROM Relay
+# #             WHERE Checked = 0
+# #             ORDER BY TimeOfRecord ASC
+# #         """)
+# #         rows = cursor.fetchall()
+
+# #         if not rows:
+# #             print("[nqma zapisi]")  # No records found
+# #         else:
+# #             for row in rows:
+# #                 device_mac = row["DeviceMACID"]
+# #                 last_state = row["LastState"]
+# #                 time_of_record = row["TimeOfRecord"]
+# #                 checked = row["Checked"]
+# #                 print(f"MAC: {device_mac}, State: {last_state}, Time: {time_of_record}, Checked: {checked}")
+
+# #                 sendGetToDevice(macAddress=device_mac)
+
+# #                 # Update the current row
+# #                 cursor.execute("""
+# #                     UPDATE Relay
+# #                     SET Checked = 1
+# #                     WHERE DeviceMACID = ? AND TimeOfRecord = ?
+# #                 """, (device_mac, time_of_record))
+
+# #                 print(f"Updated row with MAC: {device_mac} and Time: {time_of_record} (Checked=True)")
+
+# #         conn.commit()
+
+# #         # Searching for activity in table RGB
+# #         conn = sqlite3.connect("jarvis_db.db")
+# #         conn.row_factory = sqlite3.Row  # This allows access by column name
+# #         cursor = conn.cursor()
+# #         cursor.execute("""
+# #             SELECT * FROM RGB
+# #             WHERE Checked = 0
+# #             ORDER BY TimeOfRecord ASC
+# #         """)
+# #         rows = cursor.fetchall()
+
+# #         if not rows:
+# #             print("[nqma zapisi]")  # No records found
+# #         else:
+# #             for row in rows:
+# #                 device_mac = row["DeviceMACID"]
+# #                 last_colour = row["LastColour"]
+# #                 last_intensity = row["LastIntensity"]
+# #                 time_of_record = row["TimeOfRecord"]
+# #                 checked = row["Checked"]
+# #                 print(f"MAC: {device_mac}, State: {last_colour}, Type: {last_intensity}, Time: {time_of_record}, Checked: {checked}")
+
+# #                 messageToSend = last_colour + " " + last_intensity
+# #                 sendGetToDevice(macAddress=device_mac, message=messageToSend, deviceType="RGB")
+
+# #                 # Update the current row
+# #                 cursor.execute("""
+# #                     UPDATE RGB
+# #                     SET Checked = 1
+# #                     WHERE DeviceMACID = ? AND TimeOfRecord = ?
+# #                 """, (device_mac, time_of_record))
+
+# #                 print(f"Updated row with MAC: {device_mac} and Time: {time_of_record} (Checked=True)")
+
+# #         conn.commit()
+
+
+# #         # Searching for activity in table IR
+# #         conn = sqlite3.connect("jarvis_db.db")
+# #         conn.row_factory = sqlite3.Row  # This allows access by column name
+# #         cursor = conn.cursor()
+# #         cursor.execute("""
+# #             SELECT * FROM IR
+# #             WHERE Checked = 0
+# #             ORDER BY TimeOfRecord ASC
+# #         """)
+# #         rows = cursor.fetchall()
+
+# #         if not rows:
+# #             print("[nqma zapisi]")  # No records found
+# #         else:
+# #             for row in rows:
+# #                 device_mac = row["DeviceMACID"]
+# #                 last_code_sent = row["LastCodeSent"]
+# #                 time_of_record = row["TimeOfRecord"]
+# #                 checked = row["Checked"]
+# #                 print(f"MAC: {device_mac}, State: {last_state}, Code: {last_code_sent}, Time: {time_of_record}, Checked: {checked}")
+
+# #                 sendGetToDevice(macAddress=device_mac, message=last_code_sent, deviceType="IR")
+
+# #                 # Update the current row
+# #                 cursor.execute("""
+# #                     UPDATE IR
+# #                     SET Checked = 1
+# #                     WHERE DeviceMACID = ? AND TimeOfRecord = ?
+# #                 """, (device_mac, time_of_record))
+
+# #                 print(f"Updated row with MAC: {device_mac} and Time: {time_of_record} (Checked=True)")
+
+# #         conn.commit()
+
+
+# #     await asyncio.to_thread(query_db)
+
+# # async def db_loop():
+# #     """Изпълнява checkDBforActivity() на всеки 5 секунди."""
+# #     while True:
+# #         await checkDBforActivity()
+# #         await asyncio.sleep(5)
+
+# # async def dht_loop():
+# #     """Изпълнява checkDHTSensor() на всеки 15 минути."""
+# #     while True:
+# #         await checkDHTSensor()
+# #         await asyncio.sleep(900)
+
+# # def checkWifi() -> bool:
+# #     try:
+# #         url = "https://www.google.com"
+# #         urllib.request.urlopen(url, timeout=5)
+# #         return True
+# #     except:
+# #         return False
+
+# # def getTime() -> str:
+# #     current_time = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+# #     return current_state
+
+# # def searchMacAddressInDB(deviceType: str) -> str: # TODO not sure if it works
+# #     conn = sqlite3.connect("jarvis_db.db")
+# #     cursor = conn.cursor()
+# #     cursor.execute("""
+# #         SELECT DeviceMACID FROM Devices
+# #         WHERE DeviceType = ?
+# #     """, (deviceType,))
+# #     result = cursor.fetchone()
+# #     conn.close()
+# #     return result[0] if result else ""
+
+# async def main():
+#     # Starting voice loop in separate thread
+#     # MODIFIED: No need to run another asyncio.run here
+#     threading.Thread(target=lambda: asyncio.run(recognize_loop()), daemon=True).start()
+    
+#     # Starting DB loop in asyncio
+#     # asyncio.create_task(db_loop())
+#     # asyncio.create_task(dht_loop())
+
+#     print("🚀 Стартирам WebSocket сървър на ws://localhost:8765 ...")
+#     async with websockets.serve(handler, "localhost", 8765):
+#         await asyncio.Future()
+
+# # NEW: Create a simple synchronous function to start the asyncio event loop
+# def start_jarvis_core():
+#     """This function is called from backend.py to run the main async loop."""
+#     try:
+#         asyncio.run(main())
+#     except KeyboardInterrupt:
+#         print("\nСървърът е спрян.")
+
+# # MODIFIED: Change the if __name__ == "__main__" block to use the new function
+# if __name__ == "__main__":
+#     start_jarvis_core()
+
+
+
+
 import asyncio
-from email.mime import text
 import websockets
 import json
 import speech_recognition as sr
 import sys
 import io
-import threading
 import os
-import sqlite3
-import urllib
 from dotenv import load_dotenv
-
-# Libs for Online/Offline Models
 import google.generativeai as genai
-from ollama import chat
-from ollama import ChatResponse
-
-# libs for Translation
-import argostranslate.package
-import argostranslate.translate
-
-# Libs for Online TTS
-from elevenlabs.client import ElevenLabs
-from elevenlabs import play
-from elevenlabs import voices
-
-# Libs for Offline TTS
 from gtts import gTTS
 from io import BytesIO
 from pydub import AudioSegment
 from pydub.playback import play
-
-# Libs for Serial Communication with ESP32
-import serial
-import time
+from elevenlabs.client import ElevenLabs
+from elevenlabs import play as eleven_play
+import urllib.request
 from datetime import datetime
-
-PORT = 'COM4'
-BAUD_RATE = 115200
 
 # Configurations for Cyrillic
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
+# Load environment variables
 load_dotenv()
-
 ELEVENLABS_API_KEY = os.getenv("ELEVEN_LABS_API")
 GEMINI_API_KEY = os.getenv("GEMINI_KEY")
 ELEVENLABS_VOICE_ID = os.getenv("ELEVENLABS_VOICE_ID")
 
+# Initialize APIs
 client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
-
 genai.configure(api_key=GEMINI_API_KEY)
 GEMINI_MODEL = genai.GenerativeModel('gemini-1.5-flash')
 
+# Speech recognizer
 r = sr.Recognizer()
 clients = set()
-
 current_state = "idle"
 state_lock = asyncio.Lock()
 
@@ -435,6 +911,10 @@ async def set_state(new_state: str):
             current_state = new_state
             message = json.dumps({"state": current_state})
             await send_to_all(message)
+
+async def send_to_all(message):
+    if clients:
+        await asyncio.gather(*[client.send(message) for client in clients])
 
 def record_text_blocking():
     try:
@@ -459,21 +939,23 @@ async def synthesize_speech(text: str):
     print(f"[{current_state}] Синтезирам реч с Eleven Labs: '{text}'...")
     try:
         audio = client.generate(text=text, voice=ELEVENLABS_VOICE_ID)
-        play(audio)
+        eleven_play(audio)
         print(f"[{current_state}] Аудиото е възпроизведено.")
     except Exception as e:
         print(f"[{current_state}] Грешка при синтез и възпроизвеждане: {e}")
 
-async def synthesize_speech_offline(text: str):
-    # Generate TTS in memory
-    tts = gTTS(text=text, lang='bg')
-    fp = BytesIO()
-    tts.write_to_fp(fp)
-    fp.seek(0)
-
-    # Load and play audio
-    audio = AudioSegment.from_file(fp, format="mp3")
-    play(audio)
+# async def synthesize_speech_offline(text: str):
+    print(f"[{current_state}] Синтезирам офлайн реч с gTTS: '{text}'...")
+    try:
+        tts = gTTS(text=text, lang='bg')
+        fp = BytesIO()
+        tts.write_to_fp(fp)
+        fp.seek(0)
+        audio = AudioSegment.from_file(fp, format="mp3")
+        play(audio)
+        print(f"[{current_state}] Офлайн аудиото е възпроизведено.")
+    except Exception as e:
+        print(f"[{current_state}] Грешка при офлайн синтез: {e}")
 
 async def get_gemini_response(prompt: str) -> str:
     print(f"[{current_state}] Изпращам промпт към Gemini: '{prompt}'...")
@@ -489,27 +971,21 @@ async def get_gemini_response(prompt: str) -> str:
         print(f"[{current_state}] Грешка при Gemini API: {e}")
         return "Грешка при свързване с Gemini."
 
-async def get_tiny_llama_response(prompt:str ) -> str: # TODO not sure if this works, needs testing
-    print(f"[{current_state}] Изпращам промпт към Локалния модел (tiny llama): '{prompt}'...")
-    
-    response: ChatResponse = chat(model='tinyllama', messages=[
-    {
-        'role': 'user',
-        'content': {prompt},
-    },
-    ])
+# async def get_local_response(prompt: str) -> str:
+    # Placeholder for local model (e.g., TinyLLaMA or Phi-2 via HuggingFace)
+    print(f"[{current_state}] Изпращам промпт към локалния модел: '{prompt}'...")
+    # Example: response = local_model(prompt, max_length=50)[0]['generated_text']
+    return "Офлайн отговор: Тази функция не е имплементирана още."
 
-    print(response['message']['content'])
+# def checkWifi() -> bool:
+#     try:
+#         urllib.request.urlopen("https://www.google.com", timeout=5)
+#         return True
+#     except:
+#         return False
 
-    # Translate
-    translatedText = argostranslate.translate.translate(response['message']['content'], "en", "bg")
-
-    print(translatedText)
-    return translatedText
-
-async def send_to_all(message):
-    if clients:
-        await asyncio.gather(*[client.send(message) for client in clients])
+# def getTime() -> str:
+    return datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
 
 async def recognize_loop():
     loop = asyncio.get_running_loop()
@@ -521,33 +997,20 @@ async def recognize_loop():
         if text and ("джарвис" in text or "джарви" in text):
             print("🟢 'Джарвис' е разпознат!")
             await set_state("listening")
-
-            if(checkWifi()):
-                await synthesize_speech("Слушам")
-            else:
-                await synthesize_speech_offline("Слушам")
+            await synthesize_speech("Слушам") if checkWifi() else await synthesize_speech_offline("Слушам")
 
             user_command = await loop.run_in_executor(None, record_text_blocking)
             
             if user_command:
                 print(f"❓ Потребителят каза: {user_command}")
                 await set_state("answering")
-                if(checkWifi()):
-                    model_answer = await get_gemini_response(user_command)
-                else:
-                    # Translate
-                    translatedText = argostranslate.translate.translate(user_command, "bg", "en")
-                    model_answer = await get_tiny_llama_response(translatedText)
-
+                model_answer = await get_gemini_response(user_command) if checkWifi() else await get_local_response(user_command)
+                
                 if model_answer:
-                    if(checkWifi()):
-                        await synthesize_speech(model_answer)
-                    else:
-                        await synthesize_speech_offline(model_answer)
+                    await synthesize_speech(model_answer) if checkWifi() else await synthesize_speech_offline(model_answer)
             else:
                 print("⚠️ Не разбрах командата след 'Джарвис'.")
-        else:
-            await asyncio.sleep(0.5)
+        await asyncio.sleep(0.5)
 
 async def handler(websocket):
     print(f"✅ Клиент се свърза: {websocket.remote_address}")
@@ -559,295 +1022,13 @@ async def handler(websocket):
         print(f"❌ Клиент се разкачи: {websocket.remote_address}")
         clients.remove(websocket)
 
-def sendInitToDevice(macAddress: str) -> bool:
-    try:
-        ser = serial.Serial(PORT, BAUD_RATE, timeout=5)
-        time.sleep(2)  # Изчаква ESP-то да стартира
-        print(f"Connected to the {PORT}")
-    except serial.SerialException as e:
-        print("Error in opening the serial port:", e)
-        return ""  # Return empty string on error
-
-    ser.write(f'init {macAddress}\n'.encode())
-    print(f"🔁 Sent: init to {macAddress}")
-
-    line = ""
-    start_time = time.time()
-    while True:
-        if ser.in_waiting > 0:
-            line = ser.readline().decode('utf-8', errors='ignore').strip()
-            if line == "Connection Successful":
-                print("📥 Received:", line)
-                break
-        # Optional: timeout after 5 seconds
-        if time.time() - start_time > 5:
-            print("⚠️ Timeout waiting for response.")
-            break
-
-    ser.close()
-    print("Connection is ended.")
-    return True
-
-def sendGetToDevice(macAddress: str) -> str:
-    try:
-        ser = serial.Serial(PORT, BAUD_RATE, timeout=5)
-        time.sleep(2)  # Изчаква ESP-то да стартира
-        print(f"Connected to the {PORT}")
-    except serial.SerialException as e:
-        print("Error in opening the serial port:", e)
-        return ""  # Return empty string on error
-
-    ser.write(f'get {macAddress}\n'.encode())
-    print("🔁 Sent: get")
-
-    line = ""
-    start_time = time.time()
-    while True:
-        if ser.in_waiting > 0:
-            line = ser.readline().decode('utf-8', errors='ignore').strip()
-            if line:
-                print("📥 Received:", line)
-                break
-        # Optional: timeout after 5 seconds
-        if time.time() - start_time > 5:
-            print("⚠️ Timeout waiting for response.")
-            break
-
-    ser.close()
-    print("Connection is ended.")
-    return line
-
-def sendGetToDevice(macAddress:str, message:str, deviceType:str) -> str:
-    try:
-        ser = serial.Serial(PORT, BAUD_RATE, timeout=5)
-        time.sleep(2)  # Изчаква ESP-то да стартира
-        print(f"Connected to the {PORT}")
-    except serial.SerialException as e:
-        print("Error in opening the serial port:", e)
-        exit(1)
-
-    if(deviceType == "IR"):
-        # Изпращаме командата "get2"
-        ser.write(f'get2 {macAddress} {message}\n'.encode())
-        print("🔁 Sent: get2")
-
-        # Четем отговора на ESP-то
-        while True:
-            if ser.in_waiting > 0:
-                line = ser.readline().decode('utf-8', errors='ignore').strip()
-                if line:
-                    print("📥 Received:", line)
-                    break
-                
-    elif(deviceType == "RGB"):
-        # Изпращаме командата "get2"
-        messageToSend = message + " - " + "[Red;Green;Blue;Intensity]"
-
-        ser.write(f'get2 {macAddress} {messageToSend}\n'.encode())
-        print("🔁 Sent: get2")
-
-        # Четем отговора на ESP-то
-        while True:
-            if ser.in_waiting > 0:
-                line = ser.readline().decode('utf-8', errors='ignore').strip()
-                if line:
-                    print("📥 Received:", line)
-                    break
-
-    ser.close()
-    print("Connection is ended.")
-    return line
-
-async def checkDHTSensor():
-    macAddress = searchMacAddressInDB("DHT")
-    data = sendGetToDevice(macAddress)
-
-    temperature = None
-    humidity = None
-
-        # Example data: "T:23.5f,H:22.0f"
-    try:
-        parts = data.split(',')
-        for part in parts:
-            if part.startswith("T:"):
-                temperature = part.split(":")[1].replace("f", "").strip()
-            elif part.startswith("H:"):
-                humidity = part.split(":")[1].replace("f", "").strip()
-    except Exception as e:
-        print("Error parsing DHT data:", e)
-
-    # Insert into DHT table
-    conn = sqlite3.connect("jarvis_db.db")
-    cursor = conn.cursor()
-
-    time_of_record = getTime()
-    
-    cursor.execute("""
-        INSERT INTO DHT (DeviceMACID, LastTemperature, LastHumidity, TimeOfRecord)
-        VALUES (?, ?, ?, ?)
-    """, (macAddress, temperature, humidity, time_of_record))
-
-    conn.commit()
-    conn.close()
-
-async def checkDBforActivity():
-    """Проверява базата без да блокира event loop."""
-    def query_db():
-        # Searching for activity in table Relay
-        conn = sqlite3.connect("jarvis_db.db")
-        conn.row_factory = sqlite3.Row  # This allows access by column name
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT * FROM Relay
-            WHERE Checked = 0
-            ORDER BY TimeOfRecord ASC
-        """)
-        rows = cursor.fetchall()
-
-        if not rows:
-            print("[nqma zapisi]")  # No records found
-        else:
-            for row in rows:
-                device_mac = row["DeviceMACID"]
-                last_state = row["LastState"]
-                time_of_record = row["TimeOfRecord"]
-                checked = row["Checked"]
-                print(f"MAC: {device_mac}, State: {last_state}, Time: {time_of_record}, Checked: {checked}")
-
-                sendGetToDevice(macAddress=device_mac)
-
-                # Update the current row
-                cursor.execute("""
-                    UPDATE Relay
-                    SET Checked = 1
-                    WHERE DeviceMACID = ? AND TimeOfRecord = ?
-                """, (device_mac, time_of_record))
-
-                print(f"Updated row with MAC: {device_mac} and Time: {time_of_record} (Checked=True)")
-
-        conn.commit()
-
-        # Searching for activity in table RGB
-        conn = sqlite3.connect("jarvis_db.db")
-        conn.row_factory = sqlite3.Row  # This allows access by column name
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT * FROM RGB
-            WHERE Checked = 0
-            ORDER BY TimeOfRecord ASC
-        """)
-        rows = cursor.fetchall()
-
-        if not rows:
-            print("[nqma zapisi]")  # No records found
-        else:
-            for row in rows:
-                device_mac = row["DeviceMACID"]
-                last_colour = row["LastColour"]
-                last_intensity = row["LastIntensity"]
-                time_of_record = row["TimeOfRecord"]
-                checked = row["Checked"]
-                print(f"MAC: {device_mac}, State: {last_colour}, Type: {last_intensity}, Time: {time_of_record}, Checked: {checked}")
-
-                messageToSend = last_colour + " " + last_intensity
-                sendGetToDevice(macAddress=device_mac, message=messageToSend, deviceType="RGB")
-
-                # Update the current row
-                cursor.execute("""
-                    UPDATE RGB
-                    SET Checked = 1
-                    WHERE DeviceMACID = ? AND TimeOfRecord = ?
-                """, (device_mac, time_of_record))
-
-                print(f"Updated row with MAC: {device_mac} and Time: {time_of_record} (Checked=True)")
-
-        conn.commit()
-
-
-        # Searching for activity in table IR
-        conn = sqlite3.connect("jarvis_db.db")
-        conn.row_factory = sqlite3.Row  # This allows access by column name
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT * FROM IR
-            WHERE Checked = 0
-            ORDER BY TimeOfRecord ASC
-        """)
-        rows = cursor.fetchall()
-
-        if not rows:
-            print("[nqma zapisi]")  # No records found
-        else:
-            for row in rows:
-                device_mac = row["DeviceMACID"]
-                last_code_sent = row["LastCodeSent"]
-                time_of_record = row["TimeOfRecord"]
-                checked = row["Checked"]
-                print(f"MAC: {device_mac}, State: {last_state}, Code: {last_code_sent}, Time: {time_of_record}, Checked: {checked}")
-
-                sendGetToDevice(macAddress=device_mac, message=last_code_sent, deviceType="IR")
-
-                # Update the current row
-                cursor.execute("""
-                    UPDATE IR
-                    SET Checked = 1
-                    WHERE DeviceMACID = ? AND TimeOfRecord = ?
-                """, (device_mac, time_of_record))
-
-                print(f"Updated row with MAC: {device_mac} and Time: {time_of_record} (Checked=True)")
-
-        conn.commit()
-
-
-    await asyncio.to_thread(query_db)
-
-async def db_loop():
-    """Изпълнява checkDBforActivity() на всеки 5 секунди."""
-    while True:
-        await checkDBforActivity()
-        await asyncio.sleep(5)
-
-async def dht_loop():
-    """Изпълнява checkDHTSensor() на всеки 15 минути."""
-    while True:
-        await checkDHTSensor()
-        await asyncio.sleep(900)
-
-def checkWifi() -> bool:
-    try:
-        url = "https://www.google.com"
-        urllib.request.urlopen(url, timeout=5)
-        return True
-    except:
-        return False
-
-def getTime() -> str:
-    current_time = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
-    return current_state
-
-def searchMacAddressInDB(deviceType: str) -> str: # TODO not sure if it works
-    conn = sqlite3.connect("jarvis_db.db")
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT DeviceMACID FROM Devices
-        WHERE DeviceType = ?
-    """, (deviceType,))
-    result = cursor.fetchone()
-    conn.close()
-    return result[0] if result else ""
-
 async def main():
-    # Starting voice loop in separate thread
-    threading.Thread(target=lambda: asyncio.run(recognize_loop()), daemon=True).start()
-    # Starting DB loop in asyncio
-    asyncio.create_task(db_loop())
-    asyncio.create_task(dht_loop())
-
     print("🚀 Стартирам WebSocket сървър на ws://localhost:8765 ...")
+    recognize_task = asyncio.create_task(recognize_loop())
     async with websockets.serve(handler, "localhost", 8765):
-        await asyncio.Future()
+        await asyncio.gather(recognize_task)
 
-if __name__ == "__main__":
+def start_jarvis_core():
     try:
         asyncio.run(main())
     except KeyboardInterrupt:

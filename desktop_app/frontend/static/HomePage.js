@@ -24,26 +24,26 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateTime, 60000);
 
     function updateGreeting() {
-            const greetingTextElement = document.getElementById('greeting-text');
-            const hour = new Date().getHours();
+        const greetingTextElement = document.getElementById('greeting-text');
+        const hour = new Date().getHours();
 
-            let greeting = 'Здравейте, Константин';
+        let greeting = 'Здравейте, Константин';
 
-            if (hour >= 5 && hour < 12) {
-                greeting = 'Добро утро, Константин';
-            } else if (hour >= 12 && hour < 18) {
-                greeting = 'Добър ден, Константин';
-            } else {
-                greeting = 'Добър вечер, Константин';
-            }
-
-            greetingTextElement.textContent = greeting;
+        if (hour >= 5 && hour < 12) {
+            greeting = 'Добро утро, Константин';
+        } else if (hour >= 12 && hour < 18) {
+            greeting = 'Добър ден, Константин';
+        } else {
+            greeting = 'Добър вечер, Константин';
         }
+
+        greetingTextElement.textContent = greeting;
+    }
 
     updateGreeting(); 
     setInterval(updateGreeting, 60 * 60 * 1000); 
 
-   // 🌦️ Weather update logic with Open-Meteo
+    // 🌦️ Weather update logic with Open-Meteo
     async function updateWeather() {
         const weatherElement = document.querySelector('.weather-info div');
         const iconElement = document.querySelector('.weather-info i');
@@ -66,24 +66,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Map Open-Meteo weather codes to FontAwesome icons
             const iconMap = {
-                0: 'fa-sun',                // Clear sky
-                1: 'fa-cloud-sun',          // Mainly clear
-                2: 'fa-cloud',              // Partly cloudy
-                3: 'fa-cloud',              // Overcast
-                45: 'fa-smog',              // Fog
-                48: 'fa-smog',              // Depositing rime fog
-                51: 'fa-cloud-rain',        // Light drizzle
-                53: 'fa-cloud-rain',        // Moderate drizzle
-                55: 'fa-cloud-rain',        // Dense drizzle
-                61: 'fa-cloud-showers-heavy', // Slight rain
-                63: 'fa-cloud-showers-heavy', // Moderate rain
-                65: 'fa-cloud-showers-heavy', // Heavy rain
-                71: 'fa-snowflake',         // Slight snow fall
-                73: 'fa-snowflake',         // Moderate snow fall
-                75: 'fa-snowflake',         // Heavy snow fall
-                95: 'fa-bolt',              // Thunderstorm
-                96: 'fa-bolt',              // Thunderstorm with hail
-                99: 'fa-bolt'               // Thunderstorm with heavy hail
+                0: 'fa-sun',
+                1: 'fa-cloud-sun',
+                2: 'fa-cloud',
+                3: 'fa-cloud',
+                45: 'fa-smog',
+                48: 'fa-smog',
+                51: 'fa-cloud-rain',
+                53: 'fa-cloud-rain',
+                55: 'fa-cloud-rain',
+                61: 'fa-cloud-showers-heavy',
+                63: 'fa-cloud-showers-heavy',
+                65: 'fa-cloud-showers-heavy',
+                71: 'fa-snowflake',
+                73: 'fa-snowflake',
+                75: 'fa-snowflake',
+                95: 'fa-bolt',
+                96: 'fa-bolt',
+                99: 'fa-bolt'
             };
 
             const iconClass = iconMap[conditionCode] || 'fa-question';
@@ -97,23 +97,15 @@ document.addEventListener('DOMContentLoaded', () => {
     updateWeather();
     setInterval(updateWeather, 10 * 60 * 1000); // Update every 10 minutes
 
-    // Get all the button elements
-const lightButtons = document.querySelectorAll('.dashboard-item');
-
-// Add a click listener to each one
-lightButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        // This is the magic line!
-        // It adds the '.active' class if it's not there,
-        // and removes it if it is.
-        button.classList.toggle('active');
-
-        // You can still perform other actions here
-        const buttonText = button.querySelector('span').textContent;
-        console.log(`${buttonText} state was toggled.`);
+    // Dashboard buttons
+    const lightButtons = document.querySelectorAll('.dashboard-item');
+    lightButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            button.classList.toggle('active');
+            const buttonText = button.querySelector('span').textContent;
+            console.log(`${buttonText} state was toggled.`);
+        });
     });
-});
-
 
     // Jarvis animation logic
     const canvas = document.getElementById('canvas');
@@ -136,20 +128,16 @@ lightButtons.forEach(button => {
 
     // Color definitions
     const COLORS = {
-        idle: [135, 115, 178],       // CYAN
-        listening: [255, 165, 0],    // ORANGE
-        answering: [0, 219, 0]       // GREEN
+        idle: [135, 115, 178],       // Purple
+        listening: [255, 165, 0],    // Orange
+        answering: [0, 219, 0]       // Green
     };
 
-    // State machine
-    const STATES = ["idle", "listening", "answering"];
-    let currentStateIndex = 0;
-    let currentState = STATES[currentStateIndex];
+    let currentState = "idle";
     let currentColor = [...COLORS[currentState]];
-    let targetColor = [...COLORS[currentState]];
-    let lastStateChange = Date.now();
-
+    let targetColor = [...currentColor];
     const colorSpeed = 4;
+
     function blendColor(current, target, speed) {
         for (let i = 0; i < 3; i++) {
             const diff = target[i] - current[i];
@@ -165,39 +153,26 @@ lightButtons.forEach(button => {
     const numBalls = 25;
     const balls = [];
 
-    // Initialize balls with random positions, velocities, and smaller sizes
     for (let i = 0; i < numBalls; i++) {
         balls.push({
             x: Math.random() * w,
             y: Math.random() * h,
-            radius: Math.random() * 3 + 2, // Random radius between 2 and 5
-            vx: (Math.random() - 0.5) * 8, // Random velocity between -4 and 4
+            radius: Math.random() * 3 + 2,
+            vx: (Math.random() - 0.5) * 8,
             vy: (Math.random() - 0.5) * 8
         });
     }
 
     function animate() {
-        // Clear canvas
         ctx.clearRect(0, 0, w, h);
 
-        // Update state every 3 seconds
-        if (Date.now() - lastStateChange > 3000) {
-            currentStateIndex = (currentStateIndex + 1) % STATES.length;
-            currentState = STATES[currentStateIndex];
-            targetColor = [...COLORS[currentState]];
-            lastStateChange = Date.now();
-        }
-
-        // Blend colors
+        // Blend toward new target color
         blendColor(currentColor, targetColor, colorSpeed);
 
-        // Update and draw balls
         balls.forEach(ball => {
-            // Update position
             ball.x += ball.vx;
             ball.y += ball.vy;
 
-            // Bounce off walls
             if (ball.x - ball.radius < 0) {
                 ball.x = ball.radius;
                 ball.vx = -ball.vx;
@@ -213,13 +188,11 @@ lightButtons.forEach(button => {
                 ball.vy = -ball.vy;
             }
 
-            // Draw ball with slight transparency
             ctx.beginPath();
             ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
             ctx.fillStyle = `rgba(${currentColor[0]}, ${currentColor[1]}, ${currentColor[2]}, 0.8)`;
             ctx.fill();
 
-            // Draw glow effect
             ctx.beginPath();
             ctx.arc(ball.x, ball.y, ball.radius + 1.5, 0, Math.PI * 2);
             ctx.strokeStyle = `rgba(${currentColor[0]}, ${currentColor[1]}, ${currentColor[2]}, 0.3)`;
@@ -229,6 +202,31 @@ lightButtons.forEach(button => {
 
         requestAnimationFrame(animate);
     }
+
+    // WebSocket connection to Jarvis Core
+    const socket = new WebSocket("ws://localhost:8765");
+
+    socket.addEventListener("open", () => {
+        console.log("✅ Connected to Jarvis WebSocket");
+    });
+
+    socket.addEventListener("message", (event) => {
+        try {
+            const data = JSON.parse(event.data);
+            if (data.state && COLORS[data.state]) {
+                console.log(`🔄 Changing state to: ${data.state}`);
+                currentState = data.state;
+                targetColor = [...COLORS[data.state]];
+            }
+        } catch (e) {
+            console.error("Failed to parse WebSocket message:", e);
+        }
+    });
+
+    socket.addEventListener("close", () => {
+        console.log("❌ WebSocket closed, retry in 3s...");
+        setTimeout(() => location.reload(), 3000);
+    });
 
     console.log('Jarvis animation started');
     animate();
